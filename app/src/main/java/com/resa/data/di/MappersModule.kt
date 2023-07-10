@@ -2,10 +2,12 @@ package com.resa.data.di
 
 import com.resa.data.network.mappers.QueryJourneysParamsMapper
 import com.resa.data.network.mappers.QueryLocationsParamsMapper
-import com.resa.data.network.mappers.RemoteJourneyToDomainJourneyMapper
-import com.resa.data.network.mappers.RemoteJourneysResponseToDomain
-import com.resa.data.network.mappers.RemoteLocationToDomain
-import com.resa.data.network.mappers.RemoteLocationsResponseToDomain
+import com.resa.data.network.mappers.RemoteArrivalLinkToDomainLegMapper
+import com.resa.data.network.mappers.RemoteDepartLinkToDomainLegMapper
+import com.resa.data.network.mappers.RemoteLinkToDomainLegMapper
+import com.resa.data.network.mappers.RemoteToDomainJourneyMapper
+import com.resa.data.network.mappers.RemoteToDomainLegMapper
+import com.resa.data.network.mappers.RemoteToDomainLocationMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,18 +26,18 @@ object MappersModule {
 
     @Singleton
     @Provides
-    fun providesRemoteJourneysResponseToDomain(
-        remoteJourneyToDomainJourneyMapper: RemoteJourneyToDomainJourneyMapper,
-    ): RemoteJourneysResponseToDomain {
-        return RemoteJourneysResponseToDomain(
-            remoteJourneyToDomainJourneyMapper = remoteJourneyToDomainJourneyMapper,
+    fun providesRemoteToDomainJourneyMapper(
+        remoteToDomainLegMapper: RemoteToDomainLegMapper,
+        remoteLinkToDomainLegMapper: RemoteLinkToDomainLegMapper,
+        remoteDepartLinkToDomainLegMapper: RemoteDepartLinkToDomainLegMapper,
+        remoteArrivalLinkToDomainLegMapper: RemoteArrivalLinkToDomainLegMapper,
+    ): RemoteToDomainJourneyMapper {
+        return RemoteToDomainJourneyMapper(
+            legMapper = remoteToDomainLegMapper,
+            linkMapper = remoteLinkToDomainLegMapper,
+            departLinkMapper = remoteDepartLinkToDomainLegMapper,
+            arrivalLinkMapper = remoteArrivalLinkToDomainLegMapper,
         )
-    }
-
-    @Singleton
-    @Provides
-    fun providesRemoteJourneyToDomainJourneyMapper(): RemoteJourneyToDomainJourneyMapper {
-        return RemoteJourneyToDomainJourneyMapper()
     }
 
     @Singleton
@@ -46,17 +48,31 @@ object MappersModule {
 
     @Singleton
     @Provides
-    fun providesRemoteLocationsResponseToDomain(
-        remoteLocationToDomain: RemoteLocationToDomain,
-    ): RemoteLocationsResponseToDomain {
-        return RemoteLocationsResponseToDomain(
-            remoteLocationToDomain = remoteLocationToDomain,
-        )
+    fun providesRemoteLocationToDomain(): RemoteToDomainLocationMapper {
+        return RemoteToDomainLocationMapper()
     }
 
     @Singleton
     @Provides
-    fun providesRemoteLocationToDomain(): RemoteLocationToDomain {
-        return RemoteLocationToDomain()
+    fun providesRemoteToDomainLegMapper(): RemoteToDomainLegMapper {
+        return RemoteToDomainLegMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesRemoteLinkToDomainLegMapper(): RemoteLinkToDomainLegMapper {
+        return RemoteLinkToDomainLegMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesRemoteDepartLinkToDomainLegMapper(): RemoteDepartLinkToDomainLegMapper {
+        return RemoteDepartLinkToDomainLegMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesRemoteArrivalLinkToDomainLegMapper(): RemoteArrivalLinkToDomainLegMapper {
+        return RemoteArrivalLinkToDomainLegMapper()
     }
 }

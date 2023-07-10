@@ -104,6 +104,11 @@ dependencies {
     implementation(libs.moshi.kotlin)
     ksp(libs.moshi.codegen)
     implementation(libs.okhttp.interceptor)
+    implementation(libs.paging)
+    implementation(libs.paging.compose)
+
+    /* Google Services */
+    implementation(libs.google.location)
 
     /* Unit Test */
     testImplementation(libs.mockk)

@@ -16,4 +16,8 @@ interface LocationsService {
         @QueryMap queryMap: Map<String, String>,
         @Query("types") types: List<String>,
     ): LocationsResponse
+
+    companion object {
+        const val PAGE_SIZE = 10
+    }
 }

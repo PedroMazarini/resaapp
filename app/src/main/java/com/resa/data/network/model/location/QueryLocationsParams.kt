@@ -22,7 +22,7 @@ sealed class QueryLocationsParams {
     ) : QueryLocationsParams()
 
     /**
-     * The parameters to search for a Location by text.
+     * The parameters to search for a Location by coordinates.
      *
      * @param latitude the latitude used to search a location.
      * @param longitude the longitude used to search a location.

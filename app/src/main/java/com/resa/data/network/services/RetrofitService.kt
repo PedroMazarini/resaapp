@@ -10,14 +10,17 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 object RetrofitService {
 
-    fun <T> getInstance(clazz: Class<T>): T {
+    fun <T> getInstance(
+        clazz: Class<T>,
+        baseUrl: String = BASE_URL_AUTH,
+    ): T {
         val logging = HttpLoggingInterceptor()
         logging.setLevel(HttpLoggingInterceptor.Level.BODY)
 
         val httpClient: OkHttpClient.Builder = OkHttpClient.Builder()
         httpClient.addInterceptor(logging)
         return Retrofit.Builder()
-            .baseUrl("https://ext-api.vasttrafik.se/")
+            .baseUrl(baseUrl)
             .addConverterFactory(MoshiConverterFactory.create(moshi()))
             .client(httpClient.build())
             .build().create(clazz)
@@ -28,4 +31,7 @@ object RetrofitService {
             .add(KotlinJsonAdapterFactory())
             .build()
     }
+
+    const val BASE_URL_AUTH = "https://ext-api.vasttrafik.se/"
+    const val BASE_URL_QUERIES = "https://ext-api.vasttrafik.se/pr/v4/"
 }

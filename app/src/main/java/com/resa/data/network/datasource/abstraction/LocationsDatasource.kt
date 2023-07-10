@@ -1,13 +1,14 @@
 package com.resa.data.network.datasource.abstraction
 
+import androidx.paging.PagingData
 import com.resa.data.network.model.location.QueryLocationsParams
-import com.resa.data.network.requestHandlers.ApiResult
-import com.resa.domain.model.LocationCollection
+import com.resa.domain.model.Location as DomainLocation
+import kotlinx.coroutines.flow.Flow
 
 interface LocationsDatasource {
 
-    suspend fun queryLocations(
-        queryLocationsParams: QueryLocationsParams,
+    suspend fun queryLocationsByText(
+        queryLocationsParams: QueryLocationsParams.ByText,
         token: String,
-    ): ApiResult<LocationCollection?>
+    ): Flow<PagingData<DomainLocation>>
 }

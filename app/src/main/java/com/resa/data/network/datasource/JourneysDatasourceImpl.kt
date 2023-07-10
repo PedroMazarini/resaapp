@@ -1,42 +1,42 @@
 package com.resa.data.network.datasource
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.resa.data.network.datasource.abstraction.JourneysDatasource
-import com.resa.data.network.mappers.QueryJourneysParamsMapper
-import com.resa.data.network.mappers.RemoteJourneysResponseToDomain
-import com.resa.data.network.model.journeys.QueryJourneysParams
-import com.resa.data.network.model.journeys.transportModesNames
-import com.resa.data.network.model.journeys.transportSubModesNames
-import com.resa.data.network.requestHandlers.ApiResult
-import com.resa.data.network.requestHandlers.safeApiCall
-import com.resa.data.network.services.JourneysService
-import com.resa.data.network.services.RetrofitService
-import kotlinx.coroutines.Dispatchers
+import com.resa.data.network.datasource.paging.JourneysPagingSource
+import com.resa.data.network.mappers.RemoteToDomainJourneyMapper
+import com.resa.data.network.services.JourneysService.Companion.PAGE_SIZE
+import com.resa.domain.model.journey.Journey
+import com.resa.domain.model.queryjourneys.QueryJourneysParams
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import com.resa.domain.model.JourneysCollection as DomainJourneysResponse
 
 class JourneysDatasourceImpl
 @Inject
 constructor(
-    private val retrofitService: RetrofitService,
-    private val journeysParamsMapper: QueryJourneysParamsMapper,
-    private val remoteJourneysResponseToDomain: RemoteJourneysResponseToDomain,
+    private val remoteToDomainJourneyMapper: RemoteToDomainJourneyMapper,
 ) : JourneysDatasource {
 
     override suspend fun queryJourneys(
         journeysParams: QueryJourneysParams,
         token: String,
-    ): ApiResult<DomainJourneysResponse?> {
-        val queryMap = journeysParamsMapper.map(journeysParams)
+    ): Flow<PagingData<Journey>> {
 
-        return safeApiCall(Dispatchers.IO) {
-            val response = retrofitService.getInstance(JourneysService::class.java)
-                .queryJourneys(
-                    auth = "Bearer $token",
-                    queryMap = queryMap,
-                    transportModes = journeysParams.transportModesNames(),
-                    transportSubModes = journeysParams.transportSubModesNames(),
+        return Pager(
+            config = PagingConfig(pageSize = PAGE_SIZE),
+            pagingSourceFactory = {
+                JourneysPagingSource(
+                    token = token,
+                    journeysParams = journeysParams,
                 )
-            remoteJourneysResponseToDomain.map(response)
+            }
+        ).flow.map { pagingData ->
+            pagingData.map { remoteLocation ->
+                remoteToDomainJourneyMapper.map(remoteLocation)
+            }
         }
     }
 }

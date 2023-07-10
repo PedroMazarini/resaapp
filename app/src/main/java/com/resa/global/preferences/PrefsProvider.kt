@@ -28,9 +28,15 @@ constructor(
         context.datastore.putLong(VASTTRAFIK_TOKEN_EXPIRE, timestamp)
     }
 
+    suspend fun getCurrentJourneysQuery() = context.datastore.getString(CURRENT_JOURNEYS_QUERY)
+    suspend fun setCurrentJourneysQuery(query: String) {
+        context.datastore.putString(CURRENT_JOURNEYS_QUERY, query)
+    }
+
     companion object {
         const val SETTINGS_STORE = "settings_store"
         const val VASTTRAFIK_TOKEN = "vasttrafik_token"
         const val VASTTRAFIK_TOKEN_EXPIRE = "vasttrafik_token_expire"
+        const val CURRENT_JOURNEYS_QUERY = "current_journeys_query"
     }
 }

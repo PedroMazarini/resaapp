@@ -7,9 +7,8 @@ import com.resa.data.network.datasource.JourneysDatasourceImpl
 import com.resa.data.network.datasource.LocationsDatasourceImpl
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
 import com.resa.data.network.mappers.QueryJourneysParamsMapper
-import com.resa.data.network.mappers.QueryLocationsParamsMapper
-import com.resa.data.network.mappers.RemoteJourneysResponseToDomain
-import com.resa.data.network.mappers.RemoteLocationsResponseToDomain
+import com.resa.data.network.mappers.RemoteToDomainLocationMapper
+import com.resa.data.network.mappers.RemoteToDomainJourneyMapper
 import com.resa.data.network.services.RetrofitService
 import dagger.Module
 import dagger.Provides
@@ -32,26 +31,20 @@ object DatasourcesModule {
     @Singleton
     @Provides
     fun providesJourneysDatasource(
-        queryJourneysParamsMapper: QueryJourneysParamsMapper,
-        remoteJourneysResponseToDomain: RemoteJourneysResponseToDomain,
+        remoteToDomainJourneyMapper: RemoteToDomainJourneyMapper,
     ): JourneysDatasource {
         return JourneysDatasourceImpl(
-            retrofitService = RetrofitService,
-            journeysParamsMapper = queryJourneysParamsMapper,
-            remoteJourneysResponseToDomain = remoteJourneysResponseToDomain,
+            remoteToDomainJourneyMapper = remoteToDomainJourneyMapper,
         )
     }
 
     @Singleton
     @Provides
     fun providesLocationsDatasource(
-        queryLocationsParamsMapper: QueryLocationsParamsMapper,
-        remoteLocationsResponseToDomain: RemoteLocationsResponseToDomain,
+        remoteToDomainLocationMapper: RemoteToDomainLocationMapper,
     ): LocationsDatasource {
         return LocationsDatasourceImpl(
-            retrofitService = RetrofitService,
-            locationsParamsMapper = queryLocationsParamsMapper,
-            remoteLocationsResponseToDomain = remoteLocationsResponseToDomain,
+            remoteToDomainLocationMapper = remoteToDomainLocationMapper,
         )
     }
 }

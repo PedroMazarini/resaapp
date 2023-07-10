@@ -1,13 +1,14 @@
 package com.resa.data.network.datasource.abstraction
 
-import com.resa.data.network.model.journeys.QueryJourneysParams
-import com.resa.data.network.requestHandlers.ApiResult
-import com.resa.domain.model.JourneysCollection
+import androidx.paging.PagingData
+import com.resa.domain.model.journey.Journey
+import com.resa.domain.model.queryjourneys.QueryJourneysParams
+import kotlinx.coroutines.flow.Flow
 
 interface JourneysDatasource {
 
     suspend fun queryJourneys(
         journeysParams: QueryJourneysParams,
         token: String,
-    ): ApiResult<JourneysCollection?>
+    ): Flow<PagingData<Journey>>
 }

@@ -1,3 +1,36 @@
 <resources>
     <string name="app_name">Resa</string>
+    <string name="where_to_question">Where to?</string>
+    <string name="depart_at">Depart at</string>
+    <string name="arrive_by">Arrive by</string>
+    <string name="arrive_at">Arrive at</string>
+    <string name="now">Now</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="go">GO</string>
+    <string name="loading">Loading</string>
+    <string name="origin">Origin</string>
+    <string name="destination">Destination</string>
+    <string name="arrive_today">Arrive at %1$s</string>
+    <string name="platform_name">Platform %1$s</string>
+    <string name="arrive_future">Arrive in %1$s at %2$s</string>
+    <string name="departed_past">Departed at %1$s</string>
+    <string name="depart_today">Depart at %1$s</string>
+    <string name="depart_in_m">Depart in %1$sm</string>
+    <string name="depart_future">Depart on %1$s at %2$s</string>
+    <string name="current_location">Current Location</string>
+    <string name="allow_location">Please allow your location</string>
+    <string name="use_my_location">Use my location</string>
+    <string name="hour_abbreviation">h</string>
+    <string name="minute_abbreviation">m</string>
+    <string name="minute_with_abbreviation">%1$sm</string>
+    <string name="duration">Duration</string>
+    <string name="live">Live</string>
 </resources>

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
 import com.resa.data.network.datasource.abstraction.AuthenticationDatasource
-import com.resa.data.network.requestHandlers.ApiResult
 import com.resa.global.extensions.hasExpired
 import com.resa.global.extensions.plusSec
 import com.resa.global.logd
@@ -39,16 +38,15 @@ constructor(
     }
 
     private suspend fun requestToken() {
-        val tokenResult = authenticationDatasource.getToken(deviceId())
-        if (tokenResult is ApiResult.Success) {
-            tokenResult.value?.let {
-                prefsProvider.setToken(tokenResult.value.token)
-                prefsProvider.setTokenExpire(Date().plusSec(tokenResult.value.expireInSec).time)
-                logd(tag, "Token refreshed successfully : ${tokenResult.value.token}")
-            }
-        } else {
+        try {
+            val tokenResult = authenticationDatasource.getToken(deviceId())
+            prefsProvider.setToken(tokenResult.token)
+            prefsProvider.setTokenExpire(Date().plusSec(tokenResult.expireInSec).time)
+            logd(tag, "Token refreshed successfully : ${tokenResult.token}")
+        } catch (e: Exception) {
             logd(tag, "Token refresh failed")
         }
+
     }
 
     @SuppressLint("HardwareIds")

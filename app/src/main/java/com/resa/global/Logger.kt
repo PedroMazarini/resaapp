@@ -15,6 +15,10 @@ fun logd(className: String?, message: String) {
     }
 }
 
+fun loge(message: String) {
+    Log.e(TAG, message)
+}
+
 fun crashLog(msg: String?) {
     msg?.let {
         if (!DEBUG) {

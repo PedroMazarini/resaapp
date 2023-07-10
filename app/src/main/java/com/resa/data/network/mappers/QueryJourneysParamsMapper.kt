@@ -1,6 +1,6 @@
 package com.resa.data.network.mappers
 
-import com.resa.data.network.model.journeys.QueryJourneysParams
+import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.global.Mapper
 
 class QueryJourneysParamsMapper : Mapper<QueryJourneysParams, Map<String, String>> {

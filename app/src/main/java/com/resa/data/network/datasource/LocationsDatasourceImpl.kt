@@ -1,50 +1,42 @@
 package com.resa.data.network.datasource
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
-import com.resa.data.network.mappers.QueryJourneysParamsMapper
-import com.resa.data.network.mappers.QueryLocationsParamsMapper
-import com.resa.data.network.mappers.RemoteJourneysResponseToDomain
-import com.resa.data.network.mappers.RemoteLocationToDomain
-import com.resa.data.network.mappers.RemoteLocationsResponseToDomain
-import com.resa.data.network.model.journeys.QueryJourneysParams
-import com.resa.data.network.model.journeys.transportModesNames
-import com.resa.data.network.model.journeys.transportSubModesNames
+import com.resa.data.network.datasource.paging.LocationsPagingSource
+import com.resa.data.network.mappers.RemoteToDomainLocationMapper
 import com.resa.data.network.model.location.QueryLocationsParams
-import com.resa.data.network.model.location.QueryLocationsParams.*
-import com.resa.data.network.model.location.typesNames
-import com.resa.data.network.requestHandlers.ApiResult
-import com.resa.data.network.requestHandlers.safeApiCall
-import com.resa.data.network.services.JourneysService
 import com.resa.data.network.services.LocationsService
-import com.resa.data.network.services.RetrofitService
-import com.resa.domain.model.LocationCollection
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import com.resa.domain.model.JourneysCollection as DomainJourneysResponse
+import com.resa.domain.model.Location as DomainLocation
 
 class LocationsDatasourceImpl
 @Inject
 constructor(
-    private val retrofitService: RetrofitService,
-    private val locationsParamsMapper: QueryLocationsParamsMapper,
-    private val remoteLocationsResponseToDomain: RemoteLocationsResponseToDomain,
+    private val remoteToDomainLocationMapper: RemoteToDomainLocationMapper,
 ) : LocationsDatasource {
 
-    override suspend fun queryLocations(
-        queryLocationsParams: QueryLocationsParams,
-        token: String
-    ): ApiResult<LocationCollection?> {
-        val queryMap = locationsParamsMapper.map(queryLocationsParams)
+    override suspend fun queryLocationsByText(
+        queryLocationsParams: QueryLocationsParams.ByText,
+        token: String,
+    ): Flow<PagingData<DomainLocation>> {
 
-        return safeApiCall(Dispatchers.IO) {
-            val response = retrofitService.getInstance(LocationsService::class.java)
-                .queryLocation(
-                    auth = "Bearer $token",
-                    queryMode = queryLocationsParams.queryMode,
-                    queryMap = queryMap,
-                    types = queryLocationsParams.typesNames(),
+        return Pager(
+            config = PagingConfig(pageSize = LocationsService.PAGE_SIZE),
+            pagingSourceFactory = {
+                LocationsPagingSource(
+                    token = token,
+                    locationsParams = queryLocationsParams,
                 )
-            remoteLocationsResponseToDomain.map(response)
+            }
+        ).flow.map { pagingData ->
+            pagingData.map { remoteLocation ->
+                remoteToDomainLocationMapper.map(remoteLocation)
+            }
         }
     }
 }
