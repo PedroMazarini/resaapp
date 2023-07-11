@@ -3,6 +3,7 @@ package com.resa.data.network.datasource
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.map
 import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.data.network.datasource.paging.JourneysPagingSource
@@ -24,6 +25,12 @@ constructor(
         journeysParams: QueryJourneysParams,
         token: String,
     ): Flow<PagingData<Journey>> {
+        val a = JourneysPagingSource(
+            token = token,
+            journeysParams = journeysParams,
+        )
+        a.load(
+            PagingSource.LoadParams.Prepend(1, 1, false))
 
         return Pager(
             config = PagingConfig(pageSize = PAGE_SIZE),

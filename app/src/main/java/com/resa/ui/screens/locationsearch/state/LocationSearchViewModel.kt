@@ -226,6 +226,7 @@ constructor(
                 originName = it.name,
                 originLatitude = it.lat,
                 originLongitude = it.lon,
+                originType = it.type.asJourneyParamsType(),
             )
         }
         uiState.destSelected.value?.let {
@@ -234,6 +235,7 @@ constructor(
                 destinationName = it.name,
                 destinationLatitude = it.lat,
                 destinationLongitude = it.lon,
+                destinationType = it.type.asJourneyParamsType(),
             )
         }
         uiState.journeyFilters.value.let {

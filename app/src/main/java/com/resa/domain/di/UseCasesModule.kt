@@ -1,9 +1,10 @@
 package com.resa.domain.di
 
 import com.resa.data.repository.AuthenticationRepository
-import com.resa.data.repository.JourneysRepositoryImpl
 import com.resa.domain.repositoryAbstraction.JourneysRepository
 import com.resa.domain.repositoryAbstraction.LocationsRepository
+import com.resa.domain.usecases.GetCurrentJourneyQueryUseCase
+import com.resa.domain.usecases.GetCurrentJourneyQueryUseCaseImpl
 import com.resa.domain.usecases.QueryJourneysUseCase
 import com.resa.domain.usecases.QueryJourneysUseCaseImpl
 import com.resa.domain.usecases.QueryLocationByTextUseCase
@@ -58,6 +59,16 @@ object UseCasesModule {
         journeysRepository: JourneysRepository,
     ): SaveCurrentJourneyQueryUseCase {
         return SaveCurrentJourneyQueryUseCaseImpl(
+            journeysRepository = journeysRepository,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesGetCurrentJourneyQueryUseCase(
+        journeysRepository: JourneysRepository,
+    ): GetCurrentJourneyQueryUseCase {
+        return GetCurrentJourneyQueryUseCaseImpl(
             journeysRepository = journeysRepository,
         )
     }

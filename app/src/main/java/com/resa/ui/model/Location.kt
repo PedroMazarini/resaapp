@@ -1,6 +1,7 @@
 package com.resa.ui.model
 
 import com.resa.R
+import com.resa.domain.model.LocationType as DomainLocationType
 
 data class Location(
     val id: String,
@@ -31,4 +32,16 @@ enum class LocationType {
             stoparea, stoppoint -> R.drawable.ic_bus_stop
             else -> R.drawable.ic_building
         }
+
+    fun asJourneyParamsType(): DomainLocationType {
+        return when (this) {
+            stoparea -> DomainLocationType.stoparea
+            stoppoint -> DomainLocationType.stoppoint
+            address -> DomainLocationType.address
+            pointofinterest -> DomainLocationType.pointofinterest
+            metastation -> DomainLocationType.metastation
+            gps -> DomainLocationType.gps
+            else -> DomainLocationType.unknown
+        }
+    }
 }

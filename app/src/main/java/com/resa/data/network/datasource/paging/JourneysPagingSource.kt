@@ -35,7 +35,6 @@ class JourneysPagingSource(
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RemoteJourney> {
-        // TODO Fix paging may have a map here to store url reference for next pages
         return try {
             val page = params.key ?: 1
 

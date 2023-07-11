@@ -53,17 +53,6 @@ fun JourneyTimeDetail(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 journey.arrivalTimes,
             )
-
-            if (journey.arrivalTimes.isLiveTracking) {
-                LiveIcon()
-            } else {
-                Icon(
-                    modifier = Modifier.size(12.dp),
-                    painter = painterResource(id = R.drawable.ic_calendar_todo),
-                    contentDescription = null,
-                    tint = MTheme.colors.textSecondary,
-                )
-            }
         }
         Row(modifier = Modifier.padding(top = 8.dp)) {
             Text(

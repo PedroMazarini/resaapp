@@ -19,18 +19,17 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.resa.R
 import com.resa.global.extensions.toggle
@@ -39,9 +38,9 @@ import com.resa.ui.application.PayloadType
 import com.resa.ui.commoncomponents.journeySearchFilters.FiltersTopBar
 import com.resa.ui.commoncomponents.journeySearchFilters.JourneyFilter
 import com.resa.ui.commoncomponents.journeySearchFilters.getFilterDetailText
-import com.resa.ui.commoncomponents.loading.LinearLoading
 import com.resa.ui.screens.journeyselection.component.JourneyItem
 import com.resa.ui.screens.journeyselection.component.JourneyRouteSelected
+import com.resa.ui.screens.journeyselection.component.ShimmerJourneyItem
 import com.resa.ui.screens.journeyselection.component.TripSearchLoading
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiState
@@ -67,16 +66,12 @@ fun JourneySelectionScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
     ) {
-        if (journeysPaging.loadState.prepend is LoadState.Loading) {
-            TripSearchLoading()
-        } else {
-            JourneySelectionList(
-                uiState = uiState,
-                onEvent = onEvent,
-                navigateToLocationSearch = navigateToLocationSearch,
-                upPress = upPress,
-            )
-        }
+        JourneySelectionList(
+            uiState = uiState,
+            onEvent = onEvent,
+            navigateToLocationSearch = navigateToLocationSearch,
+            upPress = upPress,
+        )
     }
 }
 
@@ -155,17 +150,21 @@ fun JourneySelectionList(
                     )
                 }
                 items(
-                    key = {
-                        journeysPaging[it]?.id ?: ""
-                    },
                     count = journeysPaging.itemCount,
                 ) { index ->
                     journeysPaging[index]?.let { journey ->
                         JourneyItem(
                             journey = journey,
-                        ) {
-
-                        }
+                        ) {}
+                    }
+                }
+                if (journeysPaging.loadState.refresh == LoadState.Loading) {
+                    items(8) {
+                        ShimmerJourneyItem(
+                            modifier = Modifier
+                                .clickable(enabled = false) {}
+                                .padding(horizontal = 24.dp, vertical = 24.dp)
+                        )
                     }
                 }
             }
@@ -219,7 +218,8 @@ fun JourneySelectionScreenPreview() {
             uiState = JourneySelectionUiState(
                 journeysResult = mutableStateOf(
                     flowOf(PagingData.from(FakeFactory.journeyList())),
-                )),
+                )
+            ),
             navigateToLocationSearch = {},
             onEvent = {},
             upPress = {},

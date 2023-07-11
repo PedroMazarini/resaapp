@@ -1,5 +1,6 @@
 package com.resa.domain.model.queryjourneys
 
+import com.resa.domain.model.LocationType
 import com.resa.domain.model.TransportMode
 import com.resa.domain.model.TransportSubMode
 import com.squareup.moshi.JsonClass
@@ -10,10 +11,12 @@ data class QueryJourneysParams(
     val originName: String? = null,
     val originLatitude: Double? = null,
     val originLongitude: Double? = null,
+    val originType: LocationType? = null,
     val destinationGid: String? = null,
     val destinationName: String? = null,
     val destinationLatitude: Double? = null,
     val destinationLongitude: Double? = null,
+    val destinationType: LocationType? = null,
     val dateTime: String? = null,
     val dateTimeRelatesTo: QueryJourneysRelatesTo? = null,
     val paginationReference: String? = null,

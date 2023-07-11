@@ -33,6 +33,14 @@ constructor(
         prefsProvider.setCurrentJourneysQuery(JsonEncoder.encode(queryJourneysParams).orEmpty())
     }
 
+    override suspend fun getCurrentJourneyQuery(): Result<QueryJourneysParams> {
+        return prefsProvider.getCurrentJourneysQuery()?.let {
+            Result.success(
+                JsonEncoder.decode<QueryJourneysParams>(it)
+            )
+        } ?: return Result.failure(Throwable("No current journey query found"))
+    }
+
     private suspend fun getToken() = prefsProvider.getToken()
 
     private suspend fun getCurrentJourneysQuery() = JsonEncoder.decode<QueryJourneysParams>(

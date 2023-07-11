@@ -10,6 +10,7 @@ import com.resa.domain.model.journey.Journey
 import com.resa.domain.model.journey.JourneyTimes
 import com.resa.domain.model.journey.Leg
 import com.resa.domain.model.journey.LegColors
+import com.resa.domain.model.journey.WarningTypes
 import java.util.Date
 import java.util.UUID
 
@@ -66,7 +67,7 @@ object FakeFactory {
                 leg(name = "6"),
             ),
             hasAccessibility = true,
-            hasAlert = true,
+            warning = WarningTypes.MediumWarning,
             isDeparted = true,
             id = UUID.randomUUID().toString(),
             departure = Departure(

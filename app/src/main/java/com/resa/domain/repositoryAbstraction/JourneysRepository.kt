@@ -12,4 +12,6 @@ interface JourneysRepository {
     suspend fun saveCurrentJourneyQuery(
         queryJourneysParams: QueryJourneysParams,
     )
+
+    suspend fun getCurrentJourneyQuery(): Result<QueryJourneysParams>
 }

@@ -22,11 +22,13 @@ import com.resa.ui.theme.colors.DarkLemon
 import com.resa.ui.util.Previews
 
 @Composable
-fun LiveIcon() {
+fun LiveIcon(
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .background(
-                color = DarkLemon,
+                color = MTheme.colors.primary,
                 shape = RoundedCornerShape(2.dp),
             ),
         verticalAlignment = Alignment.CenterVertically,

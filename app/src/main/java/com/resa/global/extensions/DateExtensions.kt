@@ -62,7 +62,7 @@ fun formatMinutes(minutes: Int): String {
         val formattedHours = hours.toString().padStart(2, '0')
         "$formattedHours$h $formattedMinutes$m"
     } else {
-        formattedMinutes
+        formattedMinutes+m
     }
 }
 

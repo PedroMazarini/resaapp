@@ -6,7 +6,8 @@ enum class LocationType {
     stoppoint,
     address,
     pointofinterest,
-    metastation;
+    metastation,
+    gps;
 
     companion object {
         infix fun fromString(value: String): LocationType {

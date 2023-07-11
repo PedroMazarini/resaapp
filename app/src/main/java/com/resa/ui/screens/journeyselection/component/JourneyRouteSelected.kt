@@ -18,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resa.R
+import com.resa.domain.model.LocationType
+import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.ui.application.PayloadType
 import com.resa.ui.application.PayloadType.REQUEST_DEST_FOCUS
 import com.resa.ui.application.PayloadType.REQUEST_ORIGIN_FOCUS
@@ -54,7 +56,7 @@ fun JourneyRouteSelected(
                 modifier = Modifier
                     .padding(start = 12.dp)
                     .weight(1f),
-                text = queryParams.originName.orEmpty(),
+                text = getSelectedName(queryParams, isOrigin = true),
                 maxLines = 1,
                 style = MTheme.type.highlightTitleS.fontSize(20.sp),
                 overflow = TextOverflow.Visible,
@@ -77,7 +79,7 @@ fun JourneyRouteSelected(
                 modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp)
                     .weight(1f),
-                text = queryParams.destinationName.orEmpty(),
+                text = getSelectedName(queryParams, isOrigin = false),
                 style = MTheme.type.highlightTitleS.copy(fontSize = 20.sp),
                 maxLines = 1,
                 overflow = TextOverflow.Visible,
@@ -90,6 +92,23 @@ fun JourneyRouteSelected(
             color = MTheme.colors.separatorLight,
             thickness = 1.dp,
         )
+    }
+}
+
+@Composable
+fun getSelectedName(queryParams: QueryJourneysParams, isOrigin: Boolean): String {
+    return if (isOrigin) {
+        if (queryParams.originType == LocationType.gps) {
+            stringResource(id = R.string.current_location)
+        } else {
+            queryParams.originName.orEmpty()
+        }
+    } else {
+        if (queryParams.destinationType == LocationType.gps) {
+            stringResource(id = R.string.current_location)
+        } else {
+            queryParams.destinationName.orEmpty()
+        }
     }
 }
 

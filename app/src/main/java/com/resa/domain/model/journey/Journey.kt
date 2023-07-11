@@ -5,7 +5,7 @@ data class Journey(
     val departure: Departure,
     val durationInMinutes: Int,
     val hasAccessibility: Boolean,
-    val hasAlert: Boolean,
+    val warning: WarningTypes,
     val arrivalTimes: JourneyTimes,
     val isDeparted: Boolean,
     val legs: List<Leg>,
