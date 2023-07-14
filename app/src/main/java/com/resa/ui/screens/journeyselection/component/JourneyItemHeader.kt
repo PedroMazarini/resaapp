@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.resa.R
+import com.resa.domain.model.TransportMode
 import com.resa.domain.model.journey.Journey
 import com.resa.domain.model.journey.JourneyTimes
 import com.resa.domain.model.journey.WarningTypes
@@ -87,43 +88,47 @@ fun JourneyItemHeader(
                 if (journey.arrivalTimes.isLiveTracking) {
                     LiveIcon(modifier = Modifier.padding(top = 2.dp))
                 } else {
-                    Icon(
-                        modifier = Modifier.size(12.dp),
-                        painter = painterResource(id = R.drawable.ic_calendar_todo),
-                        contentDescription = null,
-                        tint = MTheme.colors.textSecondary,
-                    )
+                    if (journey.isOnlyWalk().not()) {
+                        Icon(
+                            modifier = Modifier.size(12.dp),
+                            painter = painterResource(id = R.drawable.ic_calendar_todo),
+                            contentDescription = null,
+                            tint = MTheme.colors.textSecondary,
+                        )
+                    }
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .padding(top = 8.dp),
-                verticalAlignment = CenterVertically,
-            ) {
-                if (journey.warning != WarningTypes.NoWarning) {
-                    WarningIcon(journey.warning.color())
-                }
-                Text(
-                    modifier = Modifier.padding(end = 12.dp),
-                    text = journey.departure.departStopName,
-                    style = MTheme.type.secondaryText,
-                )
-                Text(
-                    modifier = Modifier.padding(end = 12.dp),
-                    text = stringResource(
-                        id = R.string.platform_name,
-                        journey.departure.departPlatform
-                    ),
-                    style = MTheme.type.secondaryLightText,
-                )
-                if (journey.hasAccessibility) {
-                    Icon(
-                        modifier = Modifier.height(14.dp),
-                        painter = painterResource(id = R.drawable.ic_accessibility),
-                        contentDescription = null,
-                        tint = MTheme.colors.lightText,
+            if (journey.isOnlyWalk().not()) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 8.dp),
+                    verticalAlignment = CenterVertically,
+                ) {
+                    if (journey.warning != WarningTypes.NoWarning) {
+                        WarningIcon(journey.warning.color())
+                    }
+                    Text(
+                        modifier = Modifier.padding(end = 12.dp),
+                        text = journey.departure.departStopName,
+                        style = MTheme.type.secondaryText,
                     )
+                    Text(
+                        modifier = Modifier.padding(end = 12.dp),
+                        text = stringResource(
+                            id = R.string.platform_name,
+                            journey.departure.departPlatform
+                        ),
+                        style = MTheme.type.secondaryLightText,
+                    )
+                    if (journey.hasAccessibility) {
+                        Icon(
+                            modifier = Modifier.height(14.dp),
+                            painter = painterResource(id = R.drawable.ic_accessibility),
+                            contentDescription = null,
+                            tint = MTheme.colors.lightText,
+                        )
+                    }
                 }
             }
         }
@@ -168,6 +173,13 @@ fun getDepartText(journey: Journey): String {
             )
         }
 
+        journey.isOnlyWalk() -> {
+            stringResource(
+                id = R.string.depart_now,
+                departDate.minutesFromNow(),
+            )
+        }
+
         journey.isDeparted || journey.departure.hasPassed() -> {
             stringResource(
                 id = R.string.departed_past,
@@ -184,9 +196,13 @@ fun getDepartText(journey: Journey): String {
     }
 }
 
+private fun Journey.isOnlyWalk(): Boolean =
+    legs.size == 1 && legs.first().transportMode == TransportMode.walk
+
 @Composable
 fun departTextStyling(journey: Journey): TextStyle {
     val style = MTheme.type.highlightTextS.fontSize(20.sp)
+    if (journey.isOnlyWalk()) return style
     if (journey.isDeparted || journey.departure.hasPassed()) return style.asAlert()
 
     return style

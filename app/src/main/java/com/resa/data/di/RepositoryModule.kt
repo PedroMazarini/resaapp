@@ -1,5 +1,9 @@
 package com.resa.data.di
 
+import com.resa.data.cache.service.RecentJourneySearchCacheService
+import com.resa.data.cache.service.RecentLocationCacheService
+import com.resa.data.cache.service.SavedJourneySearchCacheService
+import com.resa.data.cache.service.SavedLocationCacheService
 import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
 import com.resa.data.repository.JourneysRepositoryImpl
@@ -22,10 +26,14 @@ object RepositoryModule {
     fun providesLocationsRepository(
         locationsDatasource: LocationsDatasource,
         prefsProvider: PrefsProvider,
+        savedLocationCacheService: SavedLocationCacheService,
+        recentLocationCacheService: RecentLocationCacheService,
     ): LocationsRepository {
         return LocationsRepositoryImpl(
             locationsDatasource = locationsDatasource,
             prefsProvider = prefsProvider,
+            savedLocationCacheService = savedLocationCacheService,
+            recentLocationCacheService = recentLocationCacheService,
         )
     }
 
@@ -34,10 +42,14 @@ object RepositoryModule {
     fun providesJourneysRepository(
         journeysDatasource: JourneysDatasource,
         prefsProvider: PrefsProvider,
+        savedJourneySearchCacheService: SavedJourneySearchCacheService,
+        recentJourneySearchCacheService: RecentJourneySearchCacheService
     ): JourneysRepository {
         return JourneysRepositoryImpl(
             journeysDatasource = journeysDatasource,
             prefsProvider = prefsProvider,
+            savedJourneySearchService = savedJourneySearchCacheService,
+            recentJourneySearchService = recentJourneySearchCacheService,
         )
     }
 }

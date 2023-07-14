@@ -11,7 +11,7 @@ import com.resa.data.network.services.JourneysService
 import com.resa.data.network.services.RetrofitService
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.model.TransportMode
-import com.resa.domain.usecases.QueryLocationByTextUseCase
+import com.resa.domain.usecases.location.QueryLocationByTextUseCase
 import com.resa.domain.usecases.RefreshTokenUseCase
 import com.resa.ui.navigation.NavigationHost
 import com.resa.ui.theme.ResaTheme

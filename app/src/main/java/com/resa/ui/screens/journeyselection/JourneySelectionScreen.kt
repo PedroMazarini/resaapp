@@ -19,7 +19,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +40,6 @@ import com.resa.ui.commoncomponents.journeySearchFilters.getFilterDetailText
 import com.resa.ui.screens.journeyselection.component.JourneyItem
 import com.resa.ui.screens.journeyselection.component.JourneyRouteSelected
 import com.resa.ui.screens.journeyselection.component.ShimmerJourneyItem
-import com.resa.ui.screens.journeyselection.component.TripSearchLoading
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiState
 import com.resa.ui.screens.locationsearch.handleBackPress
@@ -147,6 +145,7 @@ fun JourneySelectionList(
                             .padding(top = 48.dp),
                         uiState = uiState,
                         navigateToLocationSearch = navigateToLocationSearch,
+                        onEvent = onEvent,
                     )
                 }
                 items(

@@ -2,6 +2,7 @@
     <string name="app_name">Resa</string>
     <string name="where_to_question">Where to?</string>
     <string name="depart_at">Depart at</string>
+    <string name="depart_now">Depart Now</string>
     <string name="arrive_by">Arrive by</string>
     <string name="arrive_at">Arrive at</string>
     <string name="now">Now</string>
@@ -25,12 +26,15 @@
     <string name="depart_today">Depart at %1$s</string>
     <string name="depart_in_m">Depart in %1$sm</string>
     <string name="depart_future">Depart on %1$s at %2$s</string>
-    <string name="current_location">Current Location</string>
+    <string name="my_location">My Location</string>
     <string name="allow_location">Please allow your location</string>
     <string name="use_my_location">Use my location</string>
+    <string name="saved">Saved</string>
+    <string name="recent">Recent</string>
     <string name="hour_abbreviation">h</string>
     <string name="minute_abbreviation">m</string>
     <string name="minute_with_abbreviation">%1$sm</string>
     <string name="duration">Duration</string>
     <string name="live">Live</string>
+    <string name="journey_saved">Journey saved!</string>
 </resources>

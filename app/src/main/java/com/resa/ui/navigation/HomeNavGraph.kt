@@ -6,9 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.resa.ui.navigation.HomeRoutes.*
 import com.resa.ui.screens.home.HomeScreen
-import com.resa.ui.screens.home.state.HomeUiState
-import com.resa.ui.screens.journeyqueryresult.JourneyQueryResultScreen
-import com.resa.ui.screens.journeyqueryresult.state.JourneyQueryResultViewModel
+import com.resa.ui.screens.home.state.HomeViewModel
 import com.resa.ui.screens.journeyselection.JourneySelectionScreen
 import com.resa.ui.screens.journeyselection.state.JourneySelectionViewModel
 import com.resa.ui.screens.locationsearch.LocationSearchScreen
@@ -22,8 +20,9 @@ fun NavGraphBuilder.addHomeNavGraph(
     upPress: () -> Unit = {},
 ) {
     composable(HOME_START.route) {
+        val viewModel = hiltViewModel<HomeViewModel>()
         HomeScreen(
-            homeUiState = HomeUiState(), // TODO inject from viewmodel
+            uiState = viewModel.uiState,
             onFavClicked = onFavClicked,
             navToLocationSearch = navToLocationSearch,
         )

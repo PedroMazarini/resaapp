@@ -2,15 +2,16 @@ package com.resa.global.fake
 
 import androidx.compose.ui.graphics.Color
 import com.resa.domain.model.TransportMode
-import com.resa.global.extensions.plusSec
-import com.resa.ui.model.Location
-import com.resa.ui.model.LocationType
 import com.resa.domain.model.journey.Departure
 import com.resa.domain.model.journey.Journey
 import com.resa.domain.model.journey.JourneyTimes
 import com.resa.domain.model.journey.Leg
 import com.resa.domain.model.journey.LegColors
 import com.resa.domain.model.journey.WarningTypes
+import com.resa.global.extensions.plusSec
+import com.resa.ui.model.JourneySearch
+import com.resa.ui.model.Location
+import com.resa.ui.model.LocationType
 import java.util.Date
 import java.util.UUID
 
@@ -91,4 +92,29 @@ object FakeFactory {
         }
         return result.toList()
     }
+
+    fun journeySearchList(count: Int = 10): List<JourneySearch> {
+        val result = mutableListOf<JourneySearch>()
+        for (i in 0..count) {
+            result.add(
+                journeySearch()
+            )
+        }
+        return result.toList()
+    }
+
+    fun journeySearch(): JourneySearch =
+        JourneySearch(
+            id = 1,
+            origin = Location(
+                id = UUID.randomUUID().toString(),
+                name = "Liseberg long name that should ",
+                type = LocationType.values().random()
+            ),
+            destination = Location(
+                id = UUID.randomUUID().toString(),
+                name = "Brunnsparken long name ipsis literis",
+                type = LocationType.values().random()
+            )
+        )
 }

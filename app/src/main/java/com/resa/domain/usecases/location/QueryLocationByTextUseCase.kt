@@ -1,4 +1,4 @@
-package com.resa.domain.usecases
+package com.resa.domain.usecases.location
 
 import androidx.paging.PagingData
 import com.resa.domain.repositoryAbstraction.LocationsRepository

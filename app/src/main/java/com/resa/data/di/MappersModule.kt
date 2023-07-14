@@ -1,5 +1,9 @@
 package com.resa.data.di
 
+import com.resa.data.cache.mappers.DomainToCacheRecentJourneySearchMapper
+import com.resa.data.cache.mappers.DomainToCacheRecentLocationMapper
+import com.resa.data.cache.mappers.DomainToCacheSavedJourneySearchMapper
+import com.resa.data.cache.mappers.DomainToCacheSavedLocationMapper
 import com.resa.data.network.mappers.QueryJourneysParamsMapper
 import com.resa.data.network.mappers.QueryLocationsParamsMapper
 import com.resa.data.network.mappers.RemoteArrivalLinkToDomainLegMapper
@@ -74,5 +78,29 @@ object MappersModule {
     @Provides
     fun providesRemoteArrivalLinkToDomainLegMapper(): RemoteArrivalLinkToDomainLegMapper {
         return RemoteArrivalLinkToDomainLegMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesDomainToCacheSavedLocationMapper(): DomainToCacheSavedLocationMapper {
+        return DomainToCacheSavedLocationMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesDomainToCacheRecentLocationMapper(): DomainToCacheRecentLocationMapper {
+        return DomainToCacheRecentLocationMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesDomainToCacheRecentJourneySearchMapper(): DomainToCacheRecentJourneySearchMapper {
+        return DomainToCacheRecentJourneySearchMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesDomainToCacheSavedJourneySearchMapper(): DomainToCacheSavedJourneySearchMapper {
+        return DomainToCacheSavedJourneySearchMapper()
     }
 }

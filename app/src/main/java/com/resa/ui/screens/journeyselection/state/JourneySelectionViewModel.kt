@@ -2,19 +2,17 @@ package com.resa.ui.screens.journeyselection.state
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.map
-import com.resa.domain.usecases.GetCurrentJourneyQueryUseCase
-import com.resa.domain.usecases.QueryJourneysUseCase
-import com.resa.domain.usecases.SaveCurrentJourneyQueryUseCase
+import com.resa.domain.model.JourneySearch
+import com.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCase
+import com.resa.domain.usecases.journey.QueryJourneysUseCase
+import com.resa.domain.usecases.journey.SaveJourneySearchUseCase
 import com.resa.global.logd
-import com.resa.global.loge
-import com.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent.PlaceHolder
+import com.resa.ui.util.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.resa.domain.model.Location as DomainLocation
+import com.resa.domain.model.LocationType as DomainLocationType
 
 @HiltViewModel
 class JourneySelectionViewModel
@@ -22,6 +20,7 @@ class JourneySelectionViewModel
 constructor(
     private val queryJourneysUseCase: QueryJourneysUseCase,
     private val getCurrentJourneyQueryUseCase: GetCurrentJourneyQueryUseCase,
+    private val saveJourneySearchUseCase: SaveJourneySearchUseCase,
 ) : ViewModel() {
 
     val uiState: JourneySelectionUiState = JourneySelectionUiState()
@@ -36,9 +35,9 @@ constructor(
     private fun loadCurrentQueryParams() {
         viewModelScope.launch {
             getCurrentJourneyQueryUseCase()
-            .onSuccess { queryParams ->
-                uiState.queryParams.value = queryParams
-            }
+                .onSuccess { queryParams ->
+                    uiState.queryParams.value = queryParams
+                }
         }
     }
 
@@ -49,10 +48,38 @@ constructor(
     fun onEvent(event: JourneySelectionUiEvent) {
         logd(className = TAG, "onEvent: ")
         when (event) {
-            PlaceHolder -> {}
             is JourneySelectionUiEvent.DateFilterChanged -> TODO()
             is JourneySelectionUiEvent.IsDepartFilterChanged -> TODO()
             is JourneySelectionUiEvent.TimeFilterChanged -> TODO()
+            JourneySelectionUiEvent.SaveCurrentJourneySearch -> saveCurrentJourneySearch()
+        }
+    }
+
+    private fun saveCurrentJourneySearch() {
+        with(uiState.queryParams.value) {
+            val origin = DomainLocation(
+                id = originGid.orEmpty(),
+                name = originName.orEmpty(),
+                lat = originLatitude,
+                lon = originLongitude,
+                type = originType ?: DomainLocationType.unknown,
+            )
+            val destination = DomainLocation(
+                id = destinationGid.orEmpty(),
+                name = destinationName.orEmpty(),
+                lat = destinationLatitude,
+                lon = destinationLongitude,
+                type = destinationType ?: DomainLocationType.unknown,
+            )
+            viewModelScope.launchIO {
+                saveJourneySearchUseCase(
+                    JourneySearch(
+                        id = 0,
+                        origin = origin,
+                        destination = destination,
+                    )
+                )
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-package com.resa.domain.usecases
+package com.resa.domain.usecases.journey
 
 import androidx.paging.PagingData
 import com.resa.domain.model.journey.Journey

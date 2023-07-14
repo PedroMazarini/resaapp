@@ -17,6 +17,8 @@ sealed class LocationSearchUiEvent {
     data class OriginSearchChanged(val query: String) : LocationSearchUiEvent()
     data class DestSearchChanged(val query: String) : LocationSearchUiEvent()
     data class LocationSelected(val location: Location) : LocationSearchUiEvent()
+    data class SaveLocation(val location: Location) : LocationSearchUiEvent()
+    data class DeleteLocation(val id: String) : LocationSearchUiEvent()
     data class OriginFocusChanged(val hasFocus: Boolean) : LocationSearchUiEvent()
     data class DestFocusChanged(val hasFocus: Boolean) : LocationSearchUiEvent()
 

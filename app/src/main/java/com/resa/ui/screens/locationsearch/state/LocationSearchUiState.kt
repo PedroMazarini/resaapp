@@ -25,6 +25,9 @@ data class LocationSearchUiState(
     val isSelectionComplete: MutableStateFlow<Boolean> = MutableStateFlow(false),
     val showLocationButton: MutableState<Boolean> = mutableStateOf(true),
     val currentLocationRequest: MutableState<CurrentLocation?> = mutableStateOf(null),
+    /** Location suggestions */
+    val savedLocations: MutableState<List<Location>> = mutableStateOf(emptyList()),
+    val recentLocations: MutableState<List<Location>> = mutableStateOf(emptyList()),
 )
 
 enum class CurrentSearchType {

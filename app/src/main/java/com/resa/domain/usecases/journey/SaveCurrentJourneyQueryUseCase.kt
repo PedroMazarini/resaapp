@@ -1,4 +1,4 @@
-package com.resa.domain.usecases
+package com.resa.domain.usecases.journey
 
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.repositoryAbstraction.JourneysRepository

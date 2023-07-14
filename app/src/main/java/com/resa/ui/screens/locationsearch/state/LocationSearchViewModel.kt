@@ -6,9 +6,14 @@ import androidx.paging.map
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo.ARRIVAL
 import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo.DEPARTURE
-import com.resa.domain.usecases.QueryLocationByTextUseCase
 import com.resa.domain.usecases.RefreshTokenUseCase
-import com.resa.domain.usecases.SaveCurrentJourneyQueryUseCase
+import com.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
+import com.resa.domain.usecases.location.DeleteSavedLocationUseCase
+import com.resa.domain.usecases.location.GetRecentLocationsUseCase
+import com.resa.domain.usecases.location.GetSavedLocationsUseCase
+import com.resa.domain.usecases.location.QueryLocationByTextUseCase
+import com.resa.domain.usecases.location.SaveLocationUseCase
+import com.resa.domain.usecases.location.SaveRecentLocationUseCase
 import com.resa.global.extensions.isNotNull
 import com.resa.global.extensions.isNull
 import com.resa.global.extensions.rfc3339
@@ -33,8 +38,10 @@ import com.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.SwapLocati
 import com.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.TimeFilterChanged
 import com.resa.ui.screens.mapper.DomainToUiLocationMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -47,6 +54,11 @@ constructor(
     private val refreshTokenUseCase: RefreshTokenUseCase,
     private val queryLocationByTextUseCase: QueryLocationByTextUseCase,
     private val saveCurrentJourneyQueryUseCase: SaveCurrentJourneyQueryUseCase,
+    private val saveLocationUseCase: SaveLocationUseCase,
+    private val deleteSavedLocationUseCase: DeleteSavedLocationUseCase,
+    private val getSavedLocationsUseCase: GetSavedLocationsUseCase,
+    private val saveRecentLocationUseCase: SaveRecentLocationUseCase,
+    private val getRecentLocationsUseCase: GetRecentLocationsUseCase,
     private val locationMapper: DomainToUiLocationMapper,
 ) : ViewModel() {
 
@@ -58,6 +70,30 @@ constructor(
     init {
         refreshToken()
         initSearchObservers()
+        loadLocationsSuggestions()
+    }
+
+    private fun loadLocationsSuggestions() {
+        viewModelScope.launch(Dispatchers.IO) {
+            getSavedLocationsUseCase()
+                .flowOn(Dispatchers.Main)
+                .collectLatest {
+                    uiState.savedLocations.value = locationMapper.map(it)
+                    uiState.recentLocations.value =
+                        uiState.recentLocations.value.filter { location ->
+                            uiState.savedLocations.value.all { saved -> location.id != saved.id }
+                        }
+                }
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            getRecentLocationsUseCase()
+                .flowOn(Dispatchers.Main)
+                .collectLatest {
+                    uiState.recentLocations.value = locationMapper.map(it).filter { location ->
+                        uiState.savedLocations.value.all { saved -> location.id != saved.id }
+                    }
+                }
+        }
     }
 
     private fun initSearchObservers() {
@@ -133,7 +169,18 @@ constructor(
 
             is LocationSearchUiEvent.RequestLocation ->
                 uiState.currentLocationRequest.value = event.currentLocation
+
+            is LocationSearchUiEvent.SaveLocation -> saveLocation(event.location)
+            is LocationSearchUiEvent.DeleteLocation -> deleteLocation(event.id)
         }
+    }
+
+    private fun deleteLocation(id: String) {
+        viewModelScope.launch(Dispatchers.IO) { deleteSavedLocationUseCase(id) }
+    }
+
+    private fun saveLocation(location: Location) {
+        viewModelScope.launch(Dispatchers.IO) { saveLocationUseCase(locationMapper.reverse(location)) }
     }
 
     private fun updateOriginSearch(query: String) {
@@ -216,7 +263,14 @@ constructor(
                     uiState.requestOriginFocus.value = true
             }
         }
+        saveRecentLocation(location)
         updateQueryParams()
+    }
+
+    private fun saveRecentLocation(location: Location) {
+        viewModelScope.launch(Dispatchers.IO) {
+            saveRecentLocationUseCase(locationMapper.reverse(location))
+        }
     }
 
     private fun updateQueryParams() {

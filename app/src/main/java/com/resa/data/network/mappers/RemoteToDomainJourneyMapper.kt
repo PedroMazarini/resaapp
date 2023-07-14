@@ -2,6 +2,7 @@ package com.resa.data.network.mappers
 
 import com.resa.data.network.model.journeys.response.Note
 import com.resa.data.network.model.journeys.response.Severity
+import com.resa.domain.model.TransportMode
 import com.resa.domain.model.journey.Departure
 import com.resa.domain.model.journey.JourneyTimes
 import com.resa.domain.model.journey.WarningTypes
@@ -59,7 +60,12 @@ class RemoteToDomainJourneyMapper(
                 loge("$TAG failed to map Arrival Time: ${e.message}")
                 error(e)
             }
-        } ?: error("Unable to map Arrival Times")
+        } ?: run {
+            JourneyTimes.Planned(
+                time = destinationLink?.plannedArrivalTime?.parseRfc3339() ?: Date(),
+                isLiveTracking = false,
+            )
+        }
     }
 
     private fun RemoteJourney.getTime(): JourneyTimes {
@@ -81,7 +87,12 @@ class RemoteToDomainJourneyMapper(
                 loge("$TAG failed to map Time: ${e.message}")
                 error(e)
             }
-        } ?: error("Unable to map Departure Times")
+        } ?: run {
+            JourneyTimes.Planned(
+                time = destinationLink?.plannedDepartureTime?.parseRfc3339() ?: Date(),
+                isLiveTracking = false,
+            )
+        }
     }
 
     private fun RemoteJourney.getDuration(): Int {
@@ -96,6 +107,8 @@ class RemoteToDomainJourneyMapper(
                     error("Unable to map Duration")
                 }
             }
+        } ?: run {
+            durationSum = destinationLink?.plannedDurationInMinutes ?: 0
         }
         return durationSum
     }
@@ -137,6 +150,17 @@ class RemoteToDomainJourneyMapper(
         }
         arrivalAccessLink?.let {
             sortedLegs.add(sortedLegs.size, arrivalLinkMapper.map(it))
+        }
+        if (sortedLegs.isEmpty()) {
+            destinationLink?.let {
+                sortedLegs.add(
+                    DomainLeg.AccessLink(
+                        index = 0,
+                        transportMode = TransportMode.walk,
+                        durationInMinutes = it.estimatedDurationInMinutes ?: 2,
+                    )
+                )
+            }
         }
         return sortedLegs
     }

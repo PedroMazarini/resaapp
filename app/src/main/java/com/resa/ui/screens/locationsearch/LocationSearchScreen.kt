@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material3.BottomSheetScaffold
@@ -23,8 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -34,11 +37,11 @@ import com.resa.global.extensions.isNotNull
 import com.resa.global.extensions.toggle
 import com.resa.global.fake.FakeFactory
 import com.resa.ui.commoncomponents.LocationItem
-import com.resa.ui.commoncomponents.loading.LinearLoading
-import com.resa.ui.model.Location
 import com.resa.ui.commoncomponents.journeySearchFilters.FiltersTopBar
 import com.resa.ui.commoncomponents.journeySearchFilters.JourneyFilter
 import com.resa.ui.commoncomponents.journeySearchFilters.getFilterDetailText
+import com.resa.ui.commoncomponents.loading.LinearLoading
+import com.resa.ui.model.Location
 import com.resa.ui.screens.locationsearch.components.searchFields.SearchFields
 import com.resa.ui.screens.locationsearch.state.CurrentSearchType
 import com.resa.ui.screens.locationsearch.state.LocationSearchUiEvent
@@ -47,6 +50,7 @@ import com.resa.ui.screens.locationsearch.state.LocationSearchUiState
 import com.resa.ui.screens.locationsearch.state.MIN_LENGTH_FOR_SEARCH
 import com.resa.ui.theme.MTheme
 import com.resa.ui.theme.ResaTheme
+import com.resa.ui.util.fontSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -67,6 +71,8 @@ fun LocationSearchScreen(
     val isSelectionComplete by uiState.isSelectionComplete.collectAsState()
     val currentSearchType by uiState.currentSearchType.collectAsState()
     val filters by uiState.journeyFilters
+    val savedLocations by uiState.savedLocations
+    val recentLocations by uiState.recentLocations
     val searchResults = fetchSearchResults(uiState)
     val currentSearchText by fetchCurrentSearchText(uiState)
     val shouldShowResults = shouldShowResults(uiState = uiState, currentSearchText)
@@ -134,20 +140,57 @@ fun LocationSearchScreen(
                     val selectedOrigin by uiState.originSelected.collectAsState()
                     val selectedDestination by uiState.destSelected.collectAsState()
 
-                    Text(text ="Origin:: "+ selectedOrigin.toString())
-                    Text(text ="Dest:: "+ selectedDestination.toString())
+                    Text(text = "Origin:: " + selectedOrigin.toString())
+                    Text(text = "Dest:: " + selectedDestination.toString())
                 }
                 if (shouldShowResults) {
                     items(
                         count = searchResults.itemCount,
                     ) { index ->
                         searchResults[index]?.let { location ->
+                            val savedLocations by uiState.savedLocations
+                            val isSaved = savedLocations.any { it.id == location.id }
                             LocationItem(
                                 location = location,
                                 highlight = currentSearchText.trimEnd(),
+                                isSaved = isSaved,
                                 onLocationSelected = { locationSelected ->
                                     onEvent(LocationSelected(locationSelected))
                                 },
+                                saveLocation = { locationSelected ->
+                                    onEvent(SaveLocation(locationSelected))
+                                },
+                                deleteLocation = { id ->
+                                    onEvent(DeleteLocation(id))
+                                },
+                            )
+                        }
+                    }
+                } else {
+                    if (savedLocations.isNotEmpty()) {
+                        item {
+                            SuggestionHeader(text = stringResource(R.string.saved))
+                        }
+
+                        items(savedLocations) { location ->
+                            Suggestion(
+                                location = location,
+                                isSaved = true,
+                                onEvent = onEvent,
+                            )
+                        }
+                    }
+
+                    if (recentLocations.isNotEmpty()) {
+                        item {
+                            SuggestionHeader(text = stringResource(R.string.recent))
+                        }
+
+                        items(recentLocations) { location ->
+                            Suggestion(
+                                location = location,
+                                isSaved = false,
+                                onEvent = onEvent,
                             )
                         }
                     }
@@ -183,6 +226,38 @@ fun LocationSearchScreen(
         onEvent(NavigateToResults)
         navToJourneySelection()
     }
+}
+
+@Composable
+fun Suggestion(
+    location: Location,
+    isSaved: Boolean,
+    onEvent: (LocationSearchUiEvent) -> Unit,
+) {
+    LocationItem(
+        location = location,
+        isSaved = isSaved,
+        onLocationSelected = { locationSelected ->
+            onEvent(LocationSelected(locationSelected))
+        },
+        saveLocation = { locationSelected ->
+            onEvent(SaveLocation(locationSelected))
+        },
+        deleteLocation = { id ->
+            onEvent(DeleteLocation(id))
+        },
+    )
+}
+
+@Composable
+fun SuggestionHeader(text: String) {
+    Text(
+        modifier = Modifier
+            .padding(start = 24.dp)
+            .padding(vertical = 16.dp),
+        text = text,
+        style = MTheme.type.secondaryText.fontSize(16.sp),
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -234,17 +309,12 @@ fun shouldShowResults(
     val originSelected by uiState.originSelected.collectAsState()
     val destSelected by uiState.destSelected.collectAsState()
 
-//    return remember {
-//        Log.e("shouldShowResults","-----$currentSearchType  ... $currentSearchText")
-//        derivedStateOf {
     return currentSearchText.length >= MIN_LENGTH_FOR_SEARCH
             &&
             when (currentSearchType) {
                 CurrentSearchType.ORIGIN -> originSelected == null
                 CurrentSearchType.DESTINATION -> destSelected == null
             }
-//        }
-//    }
 }
 
 

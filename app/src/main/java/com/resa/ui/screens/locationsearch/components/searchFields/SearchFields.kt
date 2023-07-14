@@ -144,7 +144,7 @@ fun RequestLocationPermission(onEvent: (LocationSearchUiEvent) -> Unit) {
             }
 
             LocationAction.OnPermissionDenied -> {
-                SnackbarManager.showMessage(R.string.current_location)
+                SnackbarManager.showMessage(R.string.my_location)
             }
             else -> {}
         }
@@ -155,7 +155,7 @@ fun RequestLocationPermission(onEvent: (LocationSearchUiEvent) -> Unit) {
 fun getOriginSearchText(uiState: LocationSearchUiState): State<String> {
     val originSearch by uiState.originSearch.collectAsState()
     val origin by uiState.originSelected.collectAsState()
-    val currentText = stringResource(id = R.string.current_location)
+    val currentText = stringResource(id = R.string.my_location)
     return remember {
         derivedStateOf {
             val selected = origin
@@ -172,7 +172,7 @@ fun getOriginSearchText(uiState: LocationSearchUiState): State<String> {
 fun getDestSearchText(uiState: LocationSearchUiState): State<String> {
     val destSearch by uiState.destSearch.collectAsState()
     val dest by uiState.destSelected.collectAsState()
-    val currentText = stringResource(id = R.string.current_location)
+    val currentText = stringResource(id = R.string.my_location)
     return remember {
         derivedStateOf {
             val selected = dest
