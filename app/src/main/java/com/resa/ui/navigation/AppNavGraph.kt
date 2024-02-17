@@ -9,7 +9,6 @@ import kotlin.reflect.KFunction1
 
 fun NavGraphBuilder.addAppNavGraph(
     modifier: Modifier = Modifier,
-    onFavClicked: (favoriteId: String) -> Unit,
     navToLocationSearch: () -> Unit,
     navToJourneySelection: () -> Unit,
     upPress: () -> Unit = {},
@@ -20,7 +19,6 @@ fun NavGraphBuilder.addAppNavGraph(
     ) {
         addHomeNavGraph(
             modifier = modifier,
-            onFavClicked = onFavClicked,
             navToLocationSearch = navToLocationSearch,
             navToJourneySelection = navToJourneySelection,
             upPress = upPress,

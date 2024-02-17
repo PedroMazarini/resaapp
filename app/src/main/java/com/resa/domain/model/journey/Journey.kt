@@ -8,5 +8,6 @@ data class Journey(
     val warning: WarningTypes,
     val arrivalTimes: JourneyTimes,
     val isDeparted: Boolean,
+    val occupancyLevel: OccupancyLevel,
     val legs: List<Leg>,
 )

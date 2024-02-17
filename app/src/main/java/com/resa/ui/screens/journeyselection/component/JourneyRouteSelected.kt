@@ -78,7 +78,7 @@ fun JourneyRouteSelected(
                     .padding(start = 12.dp)
                     .weight(1f),
                 text = getSelectedName(queryParams, isOrigin = true),
-                maxLines = 1,
+                maxLines = 2,
                 style = MTheme.type.highlightTitleS.fontSize(20.sp),
                 overflow = TextOverflow.Visible,
             )
@@ -102,7 +102,7 @@ fun JourneyRouteSelected(
                     .weight(1f),
                 text = getSelectedName(queryParams, isOrigin = false),
                 style = MTheme.type.highlightTitleS.copy(fontSize = 20.sp),
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Visible,
             )
             IconButton(

@@ -6,10 +6,13 @@ import com.resa.data.cache.service.SavedJourneySearchCacheService
 import com.resa.data.cache.service.SavedLocationCacheService
 import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
+import com.resa.data.network.datasource.abstraction.StopPointsDatasource
 import com.resa.data.repository.JourneysRepositoryImpl
 import com.resa.data.repository.LocationsRepositoryImpl
+import com.resa.data.repository.StopPointsRepositoryImpl
 import com.resa.domain.repositoryAbstraction.JourneysRepository
 import com.resa.domain.repositoryAbstraction.LocationsRepository
+import com.resa.domain.repositoryAbstraction.StopPointsRepository
 import com.resa.global.preferences.PrefsProvider
 import dagger.Module
 import dagger.Provides
@@ -50,6 +53,18 @@ object RepositoryModule {
             prefsProvider = prefsProvider,
             savedJourneySearchService = savedJourneySearchCacheService,
             recentJourneySearchService = recentJourneySearchCacheService,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesStopAreaRepository(
+        stopPointsDatasource: StopPointsDatasource,
+        prefsProvider: PrefsProvider,
+    ): StopPointsRepository {
+        return StopPointsRepositoryImpl(
+            stopPointsDatasource = stopPointsDatasource,
+            prefsProvider = prefsProvider,
         )
     }
 }

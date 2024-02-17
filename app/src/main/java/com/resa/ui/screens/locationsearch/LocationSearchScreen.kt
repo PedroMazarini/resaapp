@@ -69,7 +69,6 @@ fun LocationSearchScreen(
 ) {
 
     val isSelectionComplete by uiState.isSelectionComplete.collectAsState()
-    val currentSearchType by uiState.currentSearchType.collectAsState()
     val filters by uiState.journeyFilters
     val savedLocations by uiState.savedLocations
     val recentLocations by uiState.recentLocations
@@ -131,17 +130,6 @@ fun LocationSearchScreen(
                         uiState = uiState,
                         onEvent = onEvent,
                     )
-                }
-                item {
-                    Text(text = currentSearchText)
-                    Text(text = currentSearchType.name)
-                    Text(text = shouldShowResults.toString())
-
-                    val selectedOrigin by uiState.originSelected.collectAsState()
-                    val selectedDestination by uiState.destSelected.collectAsState()
-
-                    Text(text = "Origin:: " + selectedOrigin.toString())
-                    Text(text = "Dest:: " + selectedDestination.toString())
                 }
                 if (shouldShowResults) {
                     items(
@@ -344,8 +332,8 @@ fun LocationSearchPreview() {
                 originSearchRes = mutableStateOf(flowOf(PagingData.from(fakeFavoriteList))),
                 originSearch = MutableStateFlow("abc"),
             ),
-            navToJourneySelection = {},
             onEvent = {},
+            navToJourneySelection = {},
         )
     }
 }

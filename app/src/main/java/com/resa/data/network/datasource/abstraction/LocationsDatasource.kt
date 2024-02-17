@@ -1,7 +1,7 @@
 package com.resa.data.network.datasource.abstraction
 
 import androidx.paging.PagingData
-import com.resa.data.network.model.location.QueryLocationsParams
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams
 import com.resa.domain.model.Location as DomainLocation
 import kotlinx.coroutines.flow.Flow
 

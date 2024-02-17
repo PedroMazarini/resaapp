@@ -1,8 +1,8 @@
 package com.resa.data.network.mappers
 
 import com.resa.global.Mapper
-import com.resa.data.network.model.journeys.response.DepartureAccessLink as RemoteDepartLink
-import com.resa.data.network.model.journeys.response.TransportMode as RemoteTransportMode
+import com.resa.data.network.model.travelplanner.journeys.response.DepartureAccessLink as RemoteDepartLink
+import com.resa.data.network.model.travelplanner.journeys.response.TransportMode as RemoteTransportMode
 import com.resa.domain.model.TransportMode as DomainTransportMode
 import com.resa.domain.model.journey.Leg as DomainLeg
 

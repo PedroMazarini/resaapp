@@ -16,4 +16,11 @@ sealed class JourneyTimes {
         val estimated: Date,
         override val isLiveTracking: Boolean,
     ) : JourneyTimes()
+
+    fun hasDeparted(): Boolean {
+        return when (this) {
+            is Planned -> time.before(Date())
+            is Changed -> estimated.before(Date())
+        }
+    }
 }

@@ -4,7 +4,7 @@ import androidx.annotation.WorkerThread
 import com.resa.data.cache.service.RecentLocationCacheService
 import com.resa.data.cache.service.SavedLocationCacheService
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
-import com.resa.data.network.model.location.QueryLocationsParams
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams
 import com.resa.domain.model.Location
 import com.resa.domain.repositoryAbstraction.LocationsRepository
 import com.resa.global.preferences.PrefsProvider

@@ -27,6 +27,7 @@ fun ResaTheme(
     content: @Composable () -> Unit
 ) {
     val colors = LightColorPalette //if (darkTheme) DarkColorPalette else LightColorPalette
+    val mapsStyling = GoogleMapsStyling.LIGHT //if (darkTheme) GoogleMapsStyling.DARK else GoogleMapsStyling.LIGHT
 
 //    val colorScheme = when {
 //        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -47,11 +48,13 @@ fun ResaTheme(
 
     ProvideResaColors(colors = colors) {
         ProvideTypography(resaColors = colors) {
-            MaterialTheme(
-                colorScheme = debugColorScheme,
-                typography = DebugTypography,
-                content = content
-            )
+            ProvideMapsStyling(googleMapsStyling = mapsStyling) {
+                MaterialTheme(
+                    colorScheme = debugColorScheme,
+                    typography = DebugTypography,
+                    content = content
+                )
+            }
         }
     }
 }
@@ -63,6 +66,10 @@ object MTheme {
     val type: ResaTypography
         @Composable
         get() = LocalResaTypography.current
+
+    val mapsStyling: GoogleMapsStyling
+        @Composable
+        get() = LocalResaMapsStyling.current
 }
 
 private val debugColorScheme = darkColorScheme(

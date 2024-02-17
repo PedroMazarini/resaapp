@@ -9,7 +9,9 @@ data class Location(
     val lat: Double? = null,
     val lon: Double? = null,
     val type: LocationType,
-)
+) {
+    fun isGps(): Boolean = type == LocationType.gps
+}
 
 enum class LocationType {
     unknown,

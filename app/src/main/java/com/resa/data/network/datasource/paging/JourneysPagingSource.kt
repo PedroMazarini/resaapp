@@ -3,9 +3,9 @@ package com.resa.data.network.datasource.paging
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.resa.data.network.mappers.QueryJourneysParamsMapper
-import com.resa.data.network.model.journeys.GetJourneysResponse
-import com.resa.data.network.model.journeys.response.Journey as RemoteJourney
-import com.resa.data.network.services.JourneysService
+import com.resa.data.network.model.travelplanner.journeys.GetJourneysResponse
+import com.resa.data.network.model.travelplanner.journeys.response.Journey as RemoteJourney
+import com.resa.data.network.services.travelplanner.JourneysService
 import com.resa.data.network.services.RetrofitService
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.model.queryjourneys.transportModesNames
@@ -20,7 +20,7 @@ class JourneysPagingSource(
     // TODO: Inject this field
     private val journeysService = RetrofitService.getInstance(
         JourneysService::class.java,
-        baseUrl = RetrofitService.BASE_URL_QUERIES,
+        baseUrl = RetrofitService.BASE_URL_TRAVEL_PLANNER,
     )
     // TODO: Inject this field
     private val mapper = QueryJourneysParamsMapper()
@@ -55,7 +55,7 @@ class JourneysPagingSource(
     private suspend fun queryJourneys(
         token: String,
         journeysParams: QueryJourneysParams,
-        page: Int
+        page: Int,
     ): GetJourneysResponse {
         return if (pageUrlReferences.containsKey(page)) {
             loge("LocationsPagingSource requesting from cached url reference: ${pageUrlReferences[page]}")
@@ -75,6 +75,9 @@ class JourneysPagingSource(
     }
 
     private fun updatePageUrlReferences(page: Int, response: GetJourneysResponse) {
+        response.links?.previous?.let { prevUrl ->
+            pageUrlReferences[page.minus(1)] = prevUrl
+        }
         response.links?.next?.let { nextUrl ->
             pageUrlReferences[page.plus(1)] = nextUrl
         }

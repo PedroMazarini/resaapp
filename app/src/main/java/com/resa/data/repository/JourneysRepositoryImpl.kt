@@ -7,6 +7,7 @@ import com.resa.data.cache.service.SavedJourneySearchCacheService
 import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.domain.model.JourneySearch
 import com.resa.domain.model.journey.Journey
+import com.resa.domain.model.journey.JourneyResult
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.repositoryAbstraction.JourneysRepository
 import com.resa.global.JsonEncoder
@@ -37,6 +38,13 @@ constructor(
     @WorkerThread
     override suspend fun queryJourneys(): Flow<PagingData<Journey>> =
         journeysDatasource.queryJourneys(
+            journeysParams = getCurrentJourneysQuery(),
+            token = getToken(),
+        ).flowOn(Dispatchers.IO)
+
+    @WorkerThread
+    override suspend fun queryPassedJourneys(): Flow<PagingData<Journey>> =
+        journeysDatasource.queryPassedJourneys(
             journeysParams = getCurrentJourneysQuery(),
             token = getToken(),
         ).flowOn(Dispatchers.IO)

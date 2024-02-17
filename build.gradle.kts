@@ -7,3 +7,9 @@ plugins {
     alias(libs.plugins.google.services) apply false
 }
 true // Needed to make the Suppress annotation work for the plugins block
+
+buildscript {
+    dependencies {
+        classpath("com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1")
+    }
+}

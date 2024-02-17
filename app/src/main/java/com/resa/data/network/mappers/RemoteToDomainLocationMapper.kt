@@ -1,7 +1,7 @@
 package com.resa.data.network.mappers
 
 import com.resa.global.Mapper
-import com.resa.data.network.model.location.Location as RemoteLocation
+import com.resa.data.network.model.travelplanner.location.Location as RemoteLocation
 import com.resa.domain.model.Location as DomainLocation
 import com.resa.domain.model.LocationType as DomainLocationType
 

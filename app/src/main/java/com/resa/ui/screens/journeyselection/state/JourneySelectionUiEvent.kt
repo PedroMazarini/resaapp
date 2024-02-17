@@ -8,4 +8,5 @@ sealed class JourneySelectionUiEvent {
     data class DateFilterChanged(val date: Date) : JourneySelectionUiEvent()
     data class TimeFilterChanged(val date: Date) : JourneySelectionUiEvent()
     object SaveCurrentJourneySearch : JourneySelectionUiEvent()
+    object UpdateJourneySearch : JourneySelectionUiEvent()
 }

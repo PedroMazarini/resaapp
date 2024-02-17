@@ -1,8 +1,8 @@
 package com.resa.data.network.mappers
 
-import com.resa.data.network.model.location.QueryLocationsParams
-import com.resa.data.network.model.location.QueryLocationsParams.ByCoordinates
-import com.resa.data.network.model.location.QueryLocationsParams.ByText
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams.ByCoordinates
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams.ByText
 import com.resa.global.Mapper
 
 class QueryLocationsParamsMapper : Mapper<QueryLocationsParams, Map<String, String>> {

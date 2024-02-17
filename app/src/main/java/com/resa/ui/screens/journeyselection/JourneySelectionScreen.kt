@@ -39,6 +39,7 @@ import com.resa.ui.commoncomponents.journeySearchFilters.JourneyFilter
 import com.resa.ui.commoncomponents.journeySearchFilters.getFilterDetailText
 import com.resa.ui.screens.journeyselection.component.JourneyItem
 import com.resa.ui.screens.journeyselection.component.JourneyRouteSelected
+import com.resa.ui.screens.journeyselection.component.JourneysTab
 import com.resa.ui.screens.journeyselection.component.ShimmerJourneyItem
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiState
@@ -57,8 +58,6 @@ fun JourneySelectionScreen(
     upPress: () -> Unit,
 ) {
 
-    val journeysResult by uiState.journeysResult
-    val journeysPaging = journeysResult.collectAsLazyPagingItems()
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -84,8 +83,13 @@ fun JourneySelectionList(
     navigateToLocationSearch: (PayloadType) -> Unit,
     upPress: () -> Unit,
 ) {
-    val journeysResult by uiState.journeysResult
-    val journeysPaging = journeysResult.collectAsLazyPagingItems()
+    val upcomingJourneysResult by uiState.upcomingJourneys
+    val upcomingJourneysPaging = upcomingJourneysResult.collectAsLazyPagingItems()
+
+    val passedJourneysResult by uiState.passedJourneys
+    val passedJourneysPaging = passedJourneysResult.collectAsLazyPagingItems()
+
+    val isUpcoming = remember { mutableStateOf(true) }
 
     val filters by uiState.journeyFilters
 
@@ -108,6 +112,7 @@ fun JourneySelectionList(
                 onTimeChanged = { onEvent(JourneySelectionUiEvent.TimeFilterChanged(it)) },
                 onReferenceChanged = { onEvent(JourneySelectionUiEvent.IsDepartFilterChanged(it)) },
             ) {
+                onEvent(JourneySelectionUiEvent.UpdateJourneySearch)
                 scope.launch { sheetState.hide() }
             }
         }
@@ -133,6 +138,7 @@ fun JourneySelectionList(
                             )
                         },
                     ) {
+                        onEvent(JourneySelectionUiEvent.UpdateJourneySearch)
                         scope.launch {
                             sheetState.toggle()
                         }
@@ -142,22 +148,43 @@ fun JourneySelectionList(
                     JourneyRouteSelected(
                         modifier = Modifier
                             .padding(start = 24.dp)
-                            .padding(top = 48.dp),
+                            .padding(top = 24.dp),
                         uiState = uiState,
                         navigateToLocationSearch = navigateToLocationSearch,
                         onEvent = onEvent,
                     )
                 }
-                items(
-                    count = journeysPaging.itemCount,
-                ) { index ->
-                    journeysPaging[index]?.let { journey ->
-                        JourneyItem(
-                            journey = journey,
-                        ) {}
+                item {
+                    JourneysTab(
+                        modifier = Modifier.padding(top = 16.dp),
+                        isUpcoming = isUpcoming.value,
+                    ) {
+                        isUpcoming.value = it
                     }
                 }
-                if (journeysPaging.loadState.refresh == LoadState.Loading) {
+                if (isUpcoming.value) {
+                    items(
+                        count = upcomingJourneysPaging.itemCount,
+                    ) { index ->
+                        upcomingJourneysPaging[index]?.let { journey ->
+                            JourneyItem(
+                                journey = journey,
+                            ) {}
+                        }
+                    }
+                } else {
+                    items(
+                        count = passedJourneysPaging.itemCount,
+                    ) { index ->
+                        passedJourneysPaging[index]?.let { journey ->
+                            JourneyItem(
+                                journey = journey,
+                            ) {}
+                        }
+                    }
+                }
+
+                if (upcomingJourneysPaging.loadState.refresh == LoadState.Loading) {
                     items(8) {
                         ShimmerJourneyItem(
                             modifier = Modifier
@@ -178,6 +205,7 @@ fun JourneySelectionList(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                         ) {
+                            onEvent(JourneySelectionUiEvent.UpdateJourneySearch)
                             scope.launch { sheetState.hide() }
                         }
                         .background(
@@ -186,6 +214,7 @@ fun JourneySelectionList(
                 ) {}
             }
             BackHandler(sheetState.isVisible) {
+                onEvent(JourneySelectionUiEvent.UpdateJourneySearch)
                 scope.launch { sheetState.hide() }
             }
         }
@@ -215,7 +244,7 @@ fun JourneySelectionScreenPreview() {
     ResaTheme {
         JourneySelectionScreen(
             uiState = JourneySelectionUiState(
-                journeysResult = mutableStateOf(
+                upcomingJourneys = mutableStateOf(
                     flowOf(PagingData.from(FakeFactory.journeyList())),
                 )
             ),

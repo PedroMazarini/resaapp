@@ -1,8 +1,11 @@
 package com.resa.ui.screens.journeyselection.component
 
+import android.widget.Space
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,6 +27,7 @@ import com.resa.global.extensions.date_MMM_dd
 import com.resa.global.extensions.formatMinutes
 import com.resa.global.extensions.time_HH_mm
 import com.resa.global.fake.FakeFactory
+import com.resa.ui.commoncomponents.OccupancyLevelItem
 import com.resa.ui.theme.MTheme
 import com.resa.ui.theme.ResaTheme
 import com.resa.ui.util.strikeThrough
@@ -38,7 +42,10 @@ fun JourneyTimeDetail(
         modifier = modifier.fillMaxWidth(),
     ) {
         if (journey.isOnlyWalk().not()) {
-            Row {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     modifier = Modifier
                         .padding(end = 12.dp)
@@ -49,26 +56,17 @@ fun JourneyTimeDetail(
 
                 ArriveTime(
                     modifier = Modifier.align(Alignment.CenterVertically),
-                    journey.arrivalTimes,
+                    journey,
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                OccupancyLevelItem(
+                    modifier = Modifier
+                        .padding(start = 12.dp),
+                    occupancyLevel = journey.occupancyLevel,
                 )
             }
-        }
-
-        Row(modifier = Modifier.padding(top = 8.dp)) {
-            Text(
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .align(Alignment.CenterVertically),
-                text = stringResource(id = R.string.duration),
-                style = MTheme.type.secondaryLightText,
-            )
-            Text(
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .align(Alignment.CenterVertically),
-                text = formatMinutes(journey.durationInMinutes),
-                style = MTheme.type.secondaryText,
-            )
         }
         LazyRow(modifier = Modifier.padding(top = 16.dp)) {
             itemsIndexed(journey.legs) { index, item ->
@@ -87,18 +85,18 @@ private fun Journey.isOnlyWalk(): Boolean =
 @Composable
 fun ArriveTime(
     modifier: Modifier,
-    arrivalTimes: JourneyTimes,
+    journey: Journey,
 ) {
 
-    val arrivalTime = when (arrivalTimes) {
-        is JourneyTimes.Planned -> arrivalTimes.time
-        is JourneyTimes.Changed -> arrivalTimes.estimated
+    val arrivalTime = when (journey.arrivalTimes) {
+        is JourneyTimes.Planned -> journey.arrivalTimes.time
+        is JourneyTimes.Changed -> journey.arrivalTimes.estimated
     }
 
-    if (arrivalTimes is JourneyTimes.Changed) {
+    if (journey.arrivalTimes is JourneyTimes.Changed) {
         Text(
             modifier = modifier.padding(end = 4.dp),
-            text = arrivalTimes.planned.time_HH_mm(),
+            text = journey.arrivalTimes.planned.time_HH_mm(),
             style = MTheme.type.secondaryLightText.strikeThrough(),
         )
     }
@@ -106,6 +104,12 @@ fun ArriveTime(
     Text(
         modifier = modifier.padding(end = 4.dp),
         text = formatForArrivalTime(arrivalTime),
+        style = MTheme.type.secondaryText,
+    )
+    Text(
+        modifier = Modifier
+            .padding(end = 12.dp),
+        text = stringResource(id = R.string.in_time, formatMinutes(journey.durationInMinutes)),
         style = MTheme.type.secondaryText,
     )
 }

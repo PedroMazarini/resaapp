@@ -7,13 +7,14 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     id("kotlin-kapt")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 val vasttrafikApiKey: String = gradleLocalProperties(rootDir).getProperty("VASTTRAFIK_API_KEY")
 
 android {
     namespace = "com.resa"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.resa"
@@ -63,6 +64,21 @@ android {
     }
 }
 
+secrets {
+    // Optionally specify a different file name containing your secrets.
+    // The plugin defaults to "local.properties"
+    propertiesFileName = "secrets.properties"
+
+    // A properties file containing default secret values. This file can be
+    // checked in version control.
+    defaultPropertiesFileName = "local.defaults.properties"
+
+    // Configure which keys should be ignored by the plugin by providing regular expressions.
+    // "sdk.dir" is ignored by default.
+    ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
+    ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
+}
+
 dependencies {
 
     /* KotlinX */
@@ -73,6 +89,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
+    implementation(libs.material3.pullrefresh)
     implementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.ui.util)
@@ -80,6 +97,7 @@ dependencies {
     implementation(libs.compose.runtime)
     implementation(libs.compose.ui.graphics)
     implementation(libs.activity.compose)
+    implementation(libs.activity)
     implementation(libs.compose.navigation)
 
     /* DI */
@@ -109,6 +127,7 @@ dependencies {
 
     /* Google Services */
     implementation(libs.google.location)
+    implementation(libs.google.maps.compose)
 
     /* Unit Test */
     testImplementation(libs.mockk)

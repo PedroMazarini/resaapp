@@ -6,8 +6,8 @@ import com.resa.global.Mapper
 import com.resa.global.extensions.asColor
 import com.resa.global.loge
 import com.resa.ui.theme.colors.FrenchBlue
-import com.resa.data.network.model.journeys.response.TransportMode as RemoteTransportMode
-import com.resa.data.network.model.journeys.response.TripLeg as RemoteLeg
+import com.resa.data.network.model.travelplanner.journeys.response.TransportMode as RemoteTransportMode
+import com.resa.data.network.model.travelplanner.journeys.response.TripLeg as RemoteLeg
 import com.resa.domain.model.TransportMode as DomainTransportMode
 import com.resa.domain.model.journey.Leg as DomainLeg
 import com.resa.domain.model.journey.LegColors as DomainLegColors

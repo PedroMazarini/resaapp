@@ -12,6 +12,7 @@ import com.resa.data.network.mappers.RemoteLinkToDomainLegMapper
 import com.resa.data.network.mappers.RemoteToDomainJourneyMapper
 import com.resa.data.network.mappers.RemoteToDomainLegMapper
 import com.resa.data.network.mappers.RemoteToDomainLocationMapper
+import com.resa.data.network.mappers.RemoteToDomainStopPointsMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -102,5 +103,11 @@ object MappersModule {
     @Provides
     fun providesDomainToCacheSavedJourneySearchMapper(): DomainToCacheSavedJourneySearchMapper {
         return DomainToCacheSavedJourneySearchMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesRemoteToDomainStopPointsMapper(): RemoteToDomainStopPointsMapper {
+        return RemoteToDomainStopPointsMapper()
     }
 }

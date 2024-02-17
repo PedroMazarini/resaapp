@@ -1,5 +1,6 @@
 package com.resa.ui.screens.locationsearch.components.searchFields
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -18,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -27,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.resa.R
 import com.resa.global.extensions.isNotNull
 import com.resa.global.extensions.stringRes
-import com.resa.ui.application.SnackbarManager
 import com.resa.ui.commoncomponents.permissions.location.LocationAction
 import com.resa.ui.commoncomponents.permissions.location.RequestLocation
 import com.resa.ui.model.LocationType
@@ -132,21 +134,27 @@ fun SearchFields(
             destFocusRequester.requestFocus()
         }
     }
+    LaunchedEffect(Unit) {
+        originFocusRequester.requestFocus()
+    }
 }
 
 @Composable
 fun RequestLocationPermission(onEvent: (LocationSearchUiEvent) -> Unit) {
+    val locationFailed = Toast.makeText(
+        LocalContext.current,
+        stringResource(R.string.location_failed),
+        Toast.LENGTH_LONG,
+    )
     RequestLocation {
         onEvent(LocationSearchUiEvent.RequestLocation(null))
-        when(it) {
+        when (it) {
             is LocationAction.OnSuccess -> {
                 onEvent(LocationSearchUiEvent.LocationResult(lat = it.lat, lon = it.lon))
             }
-
-            LocationAction.OnPermissionDenied -> {
-                SnackbarManager.showMessage(R.string.my_location)
+            else -> {
+                locationFailed.show()
             }
-            else -> {}
         }
     }
 }

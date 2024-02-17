@@ -91,10 +91,7 @@ fun SearchFieldRow(
                 ) {
                     Icon(
                         tint = MTheme.colors.textSecondary,
-                        modifier = Modifier.size(
-                            if (textContent.isEmpty()) 16.dp
-                            else 8.dp
-                        ),
+                        modifier = Modifier.size(16.dp),
                         painter = painterResource(id = R.drawable.ic_close),
                         contentDescription = null,
                     )

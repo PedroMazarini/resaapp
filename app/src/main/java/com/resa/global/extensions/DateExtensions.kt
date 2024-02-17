@@ -8,7 +8,7 @@ import java.util.Calendar
 import java.util.Date
 
 const val DAY_IN_MILI = 86400000
-const val HOUR_IN_MILI = 3600000
+const val FIFTY_FOUR_MIN_IN_MILI = 3540000
 //const val RFC_3339 = "yyyy-MM-dd'T'HH:mm:ssXXX"
 const val RFC_3339 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSXXX"
 
@@ -43,6 +43,8 @@ fun Date.time_HH_mm() = SimpleDateFormat("HH:mm").format(this)
 fun String.toDate_HH_mm() = SimpleDateFormat("HH:mm").parse(this)
 
 fun Date.time_HH_mm_spaced() = SimpleDateFormat("HH : mm").format(this)
+
+fun Date.time_HH_mm_ss() = SimpleDateFormat("HH:mm:ss").format(this)
 
 fun Date.date_MMM_dd() = SimpleDateFormat("MMM/dd").format(this)
 
@@ -87,11 +89,13 @@ fun Date.isToday(): Boolean {
 
 fun Date.isAfter24h(): Boolean = this.time > Date().time + DAY_IN_MILI
 
-fun Date.isAfter1h(): Boolean = this.time > Date().time + HOUR_IN_MILI
+fun Date.isAfter1h(): Boolean = this.time > Date().time + FIFTY_FOUR_MIN_IN_MILI
 
 fun Date.hasPassed(): Boolean = this.time < Date().time
 
 fun Date.minutesFromNow(): Int = kotlin.math.ceil((this.time - Date().time) / 60_000.0).toInt()
+
+fun Date.minutesFrom(millis: Long): Int = kotlin.math.ceil((this.time - millis) / 60_000.0).toInt()
 
 fun Date.setHourMinute(date: Date): Date {
     val calendar = Calendar.getInstance()

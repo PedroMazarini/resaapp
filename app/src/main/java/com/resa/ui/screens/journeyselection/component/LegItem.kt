@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.resa.R
 import com.resa.domain.model.journey.Leg
 import com.resa.global.fake.FakeFactory
+import com.resa.ui.commoncomponents.LegBoxIcon
 import com.resa.ui.theme.MTheme
 import com.resa.ui.theme.ResaTheme
 import com.resa.ui.util.Previews

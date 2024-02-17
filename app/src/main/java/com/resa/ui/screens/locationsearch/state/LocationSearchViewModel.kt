@@ -7,6 +7,7 @@ import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo.ARRIVAL
 import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo.DEPARTURE
 import com.resa.domain.usecases.RefreshTokenUseCase
+import com.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCase
 import com.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
 import com.resa.domain.usecases.location.DeleteSavedLocationUseCase
 import com.resa.domain.usecases.location.GetRecentLocationsUseCase
@@ -16,12 +17,15 @@ import com.resa.domain.usecases.location.SaveLocationUseCase
 import com.resa.domain.usecases.location.SaveRecentLocationUseCase
 import com.resa.global.extensions.isNotNull
 import com.resa.global.extensions.isNull
+import com.resa.global.extensions.parseRfc3339
 import com.resa.global.extensions.rfc3339
 import com.resa.global.extensions.setDateOnly
 import com.resa.global.extensions.setHourMinute
 import com.resa.global.logd
 import com.resa.ui.model.Location
 import com.resa.ui.model.LocationType
+import com.resa.ui.navigation.HomeRoutes
+import com.resa.ui.screens.locationsearch.model.JourneyFilters
 import com.resa.ui.screens.locationsearch.state.CurrentSearchType.DESTINATION
 import com.resa.ui.screens.locationsearch.state.CurrentSearchType.ORIGIN
 import com.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.ClearDest
@@ -59,6 +63,7 @@ constructor(
     private val getSavedLocationsUseCase: GetSavedLocationsUseCase,
     private val saveRecentLocationUseCase: SaveRecentLocationUseCase,
     private val getRecentLocationsUseCase: GetRecentLocationsUseCase,
+    private val getCurrentJourneyQueryUseCase: GetCurrentJourneyQueryUseCase,
     private val locationMapper: DomainToUiLocationMapper,
 ) : ViewModel() {
 
@@ -346,6 +351,23 @@ constructor(
             }
         }
         updateQueryParams()
+    }
+
+    private fun updateFilters(queryParams: QueryJourneysParams) {
+        uiState.journeyFilters.value = JourneyFilters(
+            date = queryParams.dateTime?.parseRfc3339() ?: Date(),
+            isDepartureFilters = queryParams.dateTimeRelatesTo == DEPARTURE,
+        )
+    }
+
+    fun verifyQueryFilters() {
+        viewModelScope.launch {
+            getCurrentJourneyQueryUseCase()
+                .onSuccess { queryParams ->
+                    if (queryParams.id == queryJourneysParams.id)
+                        updateFilters(queryParams)
+                }
+        }
     }
 
     private companion object {

@@ -7,8 +7,8 @@ import androidx.paging.map
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
 import com.resa.data.network.datasource.paging.LocationsPagingSource
 import com.resa.data.network.mappers.RemoteToDomainLocationMapper
-import com.resa.data.network.model.location.QueryLocationsParams
-import com.resa.data.network.services.LocationsService
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams
+import com.resa.data.network.services.travelplanner.LocationsService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

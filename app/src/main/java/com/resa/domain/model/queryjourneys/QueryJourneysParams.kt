@@ -4,9 +4,11 @@ import com.resa.domain.model.LocationType
 import com.resa.domain.model.TransportMode
 import com.resa.domain.model.TransportSubMode
 import com.squareup.moshi.JsonClass
+import java.util.UUID
 
 @JsonClass(generateAdapter = true)
 data class QueryJourneysParams(
+    val id : String = UUID.randomUUID().toString(),
     val originGid: String? = null,
     val originName: String? = null,
     val originLatitude: Double? = null,
@@ -36,7 +38,7 @@ data class QueryJourneysParams(
     val originPark: OwnTransport? = null,
     val destPark: OwnTransport? = null,
     val interchangeDurationInMinutes: Int? = null,
-    val includeOccupancy: Boolean? = null,
+    val includeOccupancy: Boolean? = true,
 )
 
 fun QueryJourneysParams.transportModesNames(): List<String> {

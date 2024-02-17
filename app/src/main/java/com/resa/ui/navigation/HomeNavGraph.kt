@@ -14,7 +14,6 @@ import com.resa.ui.screens.locationsearch.state.LocationSearchViewModel
 
 fun NavGraphBuilder.addHomeNavGraph(
     modifier: Modifier = Modifier,
-    onFavClicked: (favoriteId: String) -> Unit,
     navToLocationSearch: () -> Unit,
     navToJourneySelection: () -> Unit,
     upPress: () -> Unit = {},
@@ -23,12 +22,15 @@ fun NavGraphBuilder.addHomeNavGraph(
         val viewModel = hiltViewModel<HomeViewModel>()
         HomeScreen(
             uiState = viewModel.uiState,
-            onFavClicked = onFavClicked,
+            onEvent = viewModel::onEvent,
+            navToJourneySelection = navToJourneySelection,
             navToLocationSearch = navToLocationSearch,
         )
     }
     composable(HOME_LOCATION_SEARCH.route) {
+
         val viewModel = hiltViewModel<LocationSearchViewModel>()
+        viewModel.verifyQueryFilters()
         LocationSearchScreen(
             uiState = viewModel.uiState,
             onEvent = viewModel::onEvent,

@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.resa.R
 import com.resa.ui.theme.MTheme
+import org.w3c.dom.Text
 
 @Composable
 fun fromLocationString(from: String) = AnnotatedString(

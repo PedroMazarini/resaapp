@@ -11,4 +11,9 @@ interface JourneysDatasource {
         journeysParams: QueryJourneysParams,
         token: String,
     ): Flow<PagingData<Journey>>
+
+    suspend fun queryPassedJourneys(
+        journeysParams: QueryJourneysParams,
+        token: String,
+    ): Flow<PagingData<Journey>>
 }

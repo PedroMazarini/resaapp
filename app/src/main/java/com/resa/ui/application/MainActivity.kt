@@ -2,12 +2,14 @@ package com.resa.ui.application
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.resa.data.network.services.JourneysService
+import com.resa.data.network.services.travelplanner.JourneysService
 import com.resa.data.network.services.RetrofitService
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.model.TransportMode

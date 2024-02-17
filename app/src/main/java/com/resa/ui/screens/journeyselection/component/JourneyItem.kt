@@ -24,7 +24,7 @@ fun JourneyItem(
 ) {
     Column(
         modifier = modifier
-            .padding(top = 24.dp)
+            .padding(top = 16.dp)
             .fillMaxWidth()
             .clickable { onJourneyClicked(journey.id) },
     ) {
@@ -41,7 +41,7 @@ fun JourneyItem(
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp, start = 24.dp),
+                .padding(top = 6.dp, start = 24.dp),
             color = MTheme.colors.separatorLight,
             thickness = 1.dp,
         )

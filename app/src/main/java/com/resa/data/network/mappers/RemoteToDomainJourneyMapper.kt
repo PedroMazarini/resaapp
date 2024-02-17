@@ -1,7 +1,7 @@
 package com.resa.data.network.mappers
 
-import com.resa.data.network.model.journeys.response.Note
-import com.resa.data.network.model.journeys.response.Severity
+import com.resa.data.network.model.travelplanner.journeys.response.Note
+import com.resa.data.network.model.travelplanner.journeys.response.Severity
 import com.resa.domain.model.TransportMode
 import com.resa.domain.model.journey.Departure
 import com.resa.domain.model.journey.JourneyTimes
@@ -11,10 +11,12 @@ import com.resa.global.extensions.orFalse
 import com.resa.global.extensions.parseRfc3339
 import com.resa.global.loge
 import java.util.Date
-import com.resa.data.network.model.journeys.response.Journey as RemoteJourney
-import com.resa.data.network.model.journeys.response.TripLeg as RemoteLeg
+import com.resa.data.network.model.travelplanner.journeys.response.Journey as RemoteJourney
+import com.resa.data.network.model.travelplanner.journeys.response.OccupancyLevel as DataOccupancyLevel
+import com.resa.data.network.model.travelplanner.journeys.response.TripLeg as RemoteLeg
 import com.resa.domain.model.journey.Journey as DomainJourney
 import com.resa.domain.model.journey.Leg as DomainLeg
+import com.resa.domain.model.journey.OccupancyLevel as DomainOccupancyLevel
 
 class RemoteToDomainJourneyMapper(
     private val legMapper: RemoteToDomainLegMapper,
@@ -32,6 +34,7 @@ class RemoteToDomainJourneyMapper(
             arrivalTimes = value.getArrivalTimes(),
             isDeparted = value.isDeparted.orFalse,
             legs = value.getLegs(),
+            occupancyLevel = value.getOccupancyLevel(),
         )
 
     private fun RemoteJourney.getDeparture(): Departure =
@@ -170,6 +173,17 @@ class RemoteToDomainJourneyMapper(
 
     private fun RemoteLeg.isArrivalAsPlanned(): Boolean =
         plannedArrivalTime == estimatedOtherwisePlannedArrivalTime
+
+    private fun RemoteJourney.getOccupancyLevel(): DomainOccupancyLevel {
+        return occupancy?.let {
+            when (it.level) {
+                DataOccupancyLevel.low -> DomainOccupancyLevel.LOW
+                DataOccupancyLevel.medium -> DomainOccupancyLevel.MEDIUM
+                DataOccupancyLevel.high -> DomainOccupancyLevel.HIGH
+                else -> DomainOccupancyLevel.UNKNOWN
+            }
+        } ?: DomainOccupancyLevel.UNKNOWN
+    }
 
     companion object {
         private const val TAG = "RemoteToDomainJourneyMapper"

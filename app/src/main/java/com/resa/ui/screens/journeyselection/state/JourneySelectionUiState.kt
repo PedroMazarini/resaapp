@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 data class JourneySelectionUiState(
-    val journeysResult: MutableState<Flow<PagingData<Journey>>> = mutableStateOf(emptyFlow()),
+    val upcomingJourneys: MutableState<Flow<PagingData<Journey>>> = mutableStateOf(emptyFlow()),
+    val passedJourneys: MutableState<Flow<PagingData<Journey>>> = mutableStateOf(emptyFlow()),
     val journeyFilters: MutableState<JourneyFilters> = mutableStateOf(JourneyFilters()),
     val queryParams: MutableState<QueryJourneysParams> = mutableStateOf(QueryJourneysParams()),
+    val filtersChanged: MutableState<Boolean> = mutableStateOf(false),
 )
 
 sealed class JourneysFeed {

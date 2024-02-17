@@ -3,14 +3,14 @@ package com.resa.data.network.datasource.paging
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.resa.data.network.mappers.QueryLocationsParamsMapper
-import com.resa.data.network.model.location.QueryLocationsParams
-import com.resa.data.network.model.location.typesNames
-import com.resa.data.network.services.LocationsService
-import com.resa.data.network.services.LocationsService.Companion.PAGE_SIZE
+import com.resa.data.network.model.travelplanner.location.QueryLocationsParams
+import com.resa.data.network.model.travelplanner.location.typesNames
+import com.resa.data.network.services.travelplanner.LocationsService
+import com.resa.data.network.services.travelplanner.LocationsService.Companion.PAGE_SIZE
 import com.resa.data.network.services.RetrofitService
-import com.resa.data.network.services.RetrofitService.BASE_URL_QUERIES
+import com.resa.data.network.services.RetrofitService.BASE_URL_TRAVEL_PLANNER
 import com.resa.global.loge
-import com.resa.data.network.model.location.Location as RemoteLocation
+import com.resa.data.network.model.travelplanner.location.Location as RemoteLocation
 
 class LocationsPagingSource(
     private val token: String,
@@ -20,7 +20,7 @@ class LocationsPagingSource(
     // TODO: Inject this field
     private val locationsService = RetrofitService.getInstance(
         LocationsService::class.java,
-        baseUrl = BASE_URL_QUERIES,
+        baseUrl = BASE_URL_TRAVEL_PLANNER,
     )
     // TODO: Inject this field
     private val mapper = QueryLocationsParamsMapper()

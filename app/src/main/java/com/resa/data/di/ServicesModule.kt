@@ -16,7 +16,7 @@ import com.resa.data.cache.service.SavedJourneySearchCacheService
 import com.resa.data.cache.service.SavedJourneySearchCacheServiceImpl
 import com.resa.data.cache.service.SavedLocationCacheService
 import com.resa.data.cache.service.SavedLocationCacheServiceImpl
-import com.resa.data.network.services.LocationsService
+import com.resa.data.network.services.travelplanner.LocationsService
 import com.resa.data.network.services.RetrofitService
 import dagger.Module
 import dagger.Provides
@@ -81,4 +81,5 @@ object ServicesModule {
             recentJourneyMapper = recentJourneySearchMapper,
         )
     }
+
 }

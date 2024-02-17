@@ -1,23 +1,29 @@
 package com.resa.ui.screens.home
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.res.Resources.getSystem
+import android.graphics.Color
+import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,23 +33,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
+import androidx.core.view.WindowCompat
 import com.resa.R
 import com.resa.global.fake.FakeFactory
+import com.resa.ui.commoncomponents.SavedJourneyAdd
 import com.resa.ui.commoncomponents.SavedJourneyItem
+import com.resa.ui.commoncomponents.permissions.Common
+import com.resa.ui.commoncomponents.permissions.location.LocationAction
+import com.resa.ui.commoncomponents.permissions.location.RequestLocation
+import com.resa.ui.screens.home.components.Departures
+import com.resa.ui.screens.home.components.HomeMap
 import com.resa.ui.screens.home.components.bars.HomeSearchBar
+import com.resa.ui.screens.home.model.SavedJourneyState
+import com.resa.ui.screens.home.state.HomeUiEvent
 import com.resa.ui.screens.home.state.HomeUiState
 import com.resa.ui.theme.MTheme
 import com.resa.ui.theme.ResaTheme
 import com.resa.ui.util.Previews
 import com.resa.ui.util.fontSize
-import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.glide.GlideImage
 
 val Int.px: Int get() = (this * getSystem().displayMetrics.density).toInt()
 val Int.density: Int get() = (this / getSystem().displayMetrics.density).toInt()
@@ -51,14 +63,14 @@ val Int.density: Int get() = (this / getSystem().displayMetrics.density).toInt()
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
-    onFavClicked: (favoriteId: String) -> Unit = {},
+    onEvent: (HomeUiEvent) -> Unit = {},
     navToLocationSearch: () -> Unit = {},
-    onRecentSearchClicked: (searchId: String) -> Unit = {},
+    navToJourneySelection: () -> Unit = {},
 ) {
 
     val lazyListState = rememberLazyListState()
-
     val searchBarOffset = calculateSearchOffeset(lazyListState)
+    val navigateToJourneySelection by uiState.navigateToJourneySelection
 
     Column(
         modifier = Modifier
@@ -70,29 +82,17 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .height(190.dp)
                 .graphicsLayer {
-                    translationY = searchBarOffset
+//                    translationY = searchBarOffset
                 }
                 .background(MTheme.colors.background)
                 .padding(bottom = 4.dp),
             contentAlignment = Alignment.BottomCenter,
         ) {
-
-            GlideImage(
+            HomeMap(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = 28.dp),
-                imageModel = { "https://snazzy-maps-cdn.azureedge.net/assets/151-ultra-light-with-labels.png?v=20170626083737" },
-                imageOptions = ImageOptions(
-                    contentScale = ContentScale.Crop,
-                    alignment = Alignment.Center,
-                ),
-                requestBuilder = {
-                    Glide
-                        .with(LocalContext.current)
-                        .asBitmap()
-                        .apply(RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                },
-                previewPlaceholder = R.drawable.map_preview,
+                uiState = uiState,
             )
             HomeSearchBar(
                 onSearchBarClicked = navToLocationSearch,
@@ -100,15 +100,33 @@ fun HomeScreen(
         }
 
         Box {
-            SavedJourneys(uiState)
+            SavedJourneys(uiState, onEvent, navToLocationSearch)
         }
+
+        Departures(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 16.dp, horizontal = 24.dp),
+            homeUiState = uiState,
+            onEvent = onEvent,
+        )
     }
 
+    if (navigateToJourneySelection) {
+        navToJourneySelection()
+        onEvent(HomeUiEvent.NavigationRequested)
+    }
 }
 
 @Composable
-fun SavedJourneys(uiState: HomeUiState) {
-    val savedJourneys by uiState.savedJourneys
+fun SavedJourneys(
+    uiState: HomeUiState,
+    onEvent: (HomeUiEvent) -> Unit,
+    navToLocationSearch: () -> Unit,
+) {
+    val savedJourneyState by uiState.savedJourneyState
+    val requestGpsLocation by uiState.requestGpsLocation
+    val hasCheckedPermission by uiState.hasCheckedPermission
 
     Column {
         Text(
@@ -121,14 +139,67 @@ fun SavedJourneys(uiState: HomeUiState) {
 
         LazyRow(
             modifier = Modifier,
-            contentPadding = PaddingValues(start = 24.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = spacedBy(8.dp),
         ) {
-            items(savedJourneys) {
-                SavedJourneyItem(
-                    journeySearch = it,
-                    showDeleteButton = true,
-                )
+
+            if (savedJourneyState is SavedJourneyState.Loaded) {
+                val loaded = savedJourneyState as SavedJourneyState.Loaded
+                items(loaded.journeys) {
+                    SavedJourneyItem(
+                        journeySearch = it,
+                        showDeleteButton = true,
+                        onItemClicked = { journeySearch ->
+                            onEvent(HomeUiEvent.OnSavedJourneyClicked(journeySearch))
+                        },
+                        onDelete = { id ->
+                            onEvent(HomeUiEvent.DeleteSavedJourney(id))
+                        },
+                    )
+                }
+            } else {
+                item {
+                    SavedJourneyAdd(onAddClicked = navToLocationSearch)
+                }
+            }
+        }
+    }
+    if (requestGpsLocation) {
+        RequestLocationPermission(onEvent)
+    }
+    if (!hasCheckedPermission) {
+        CheckLocationPermission(onEvent)
+    }
+}
+
+@Composable
+fun CheckLocationPermission(onEvent: (HomeUiEvent) -> Unit) {
+
+    val hasPermission = Common.checkIfPermissionGranted(
+        LocalContext.current,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    onEvent(HomeUiEvent.CheckedPermission(hasPermission))
+}
+
+@Composable
+fun RequestLocationPermission(onEvent: (HomeUiEvent) -> Unit) {
+    val locationFailed = Toast.makeText(
+        LocalContext.current,
+        stringResource(R.string.location_failed),
+        Toast.LENGTH_LONG,
+    )
+    RequestLocation {
+        onEvent(HomeUiEvent.ClearLoadingSavedJourneys)
+        when (it) {
+            is LocationAction.OnSuccess -> {
+                onEvent(HomeUiEvent.UpdateGpsRequest(false))
+                onEvent(HomeUiEvent.LocationResult(lat = it.lat, lon = it.lon))
+            }
+
+            else -> {
+                onEvent(HomeUiEvent.UpdateGpsRequest(false))
+                locationFailed.show()
             }
         }
     }
@@ -154,7 +225,11 @@ fun HomeDefaultPreview() {
     ResaTheme {
         HomeScreen(
             uiState = HomeUiState(
-                savedJourneys = mutableStateOf(FakeFactory.journeySearchList()),
+                savedJourneyState = mutableStateOf(
+                    SavedJourneyState.Loaded(
+                        FakeFactory.journeySearchList()
+                    )
+                ),
             ),
         )
     }
