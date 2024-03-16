@@ -2,16 +2,20 @@ package com.resa.global.fake
 
 import androidx.compose.ui.graphics.Color
 import com.resa.domain.model.TransportMode
+import com.resa.domain.model.journey.ArrivalLeg
 import com.resa.domain.model.journey.Departure
 import com.resa.domain.model.journey.Journey
 import com.resa.domain.model.journey.JourneyTimes
 import com.resa.domain.model.journey.Leg
 import com.resa.domain.model.journey.LegColors
+import com.resa.domain.model.journey.LegDetails
+import com.resa.domain.model.journey.LegStop
 import com.resa.domain.model.journey.OccupancyLevel
+import com.resa.domain.model.journey.Warning
+import com.resa.domain.model.journey.WarningSeverity
 import com.resa.domain.model.journey.WarningTypes
 import com.resa.domain.model.stoparea.StopJourney
 import com.resa.domain.model.stoparea.StopPoint
-import com.resa.global.extensions.plusSec
 import com.resa.ui.model.JourneySearch
 import com.resa.ui.model.Location
 import com.resa.ui.model.LocationType
@@ -34,20 +38,100 @@ object FakeFactory {
         return result.toList()
     }
 
+    fun legList(count: Int = 10): List<Leg> {
+        val result = mutableListOf<Leg>()
+        for (i in 0..count) result.add(leg())
+        return result.toList()
+    }
+
     fun leg(
+        index : Int = 0,
         name: String = "1",
         mode: TransportMode = TransportMode.walk,
-    ): Leg {
+        details: LegDetails = legDetails(),
+        arrivalLeg: ArrivalLeg = ArrivalLeg.None,
+        departTime: JourneyTimes = JourneyTimes.Planned(
+            time = Date(),
+            isLiveTracking = true,
+        ),
+        warnings: List<Warning> = listOf(),
+    ): Leg.Transport {
         return Leg.Transport(
-            index = 0,
+            index = index,
             name = name,
+            arrivalLeg = arrivalLeg,
             transportMode = mode,
             durationInMinutes = 10,
+            departTime = departTime,
+            details = details,
+            distanceInMeters = 720,
             colors = LegColors(
                 foreground = Color.White,
                 background = Color.Blue,
                 border = Color.White,
             ),
+            warnings = warnings,
+        )
+    }
+
+    private fun legDetails(): LegDetails =
+        LegDetails.Details(
+            index = 1,
+            pathWay = listOf(),
+            legStops = legStopList(),
+            platForm = null,
+        )
+
+    fun departWalkLeg(
+        departTime: JourneyTimes = JourneyTimes.Planned(
+            time = Date(),
+            isLiveTracking = true,
+        ),
+        warnings: List<Warning> = listOf(),
+    ): Leg.DepartureLink {
+        return Leg.DepartureLink(
+            index = 0,
+            transportMode = TransportMode.walk,
+            durationInMinutes = 10,
+            name = "Liseberg",
+            departTime = departTime,
+            distanceInMeters = 720,
+            from = null,
+            to = null,
+            warnings = warnings,
+        )
+    }
+
+    fun accessWalkLeg(): Leg.AccessLink {
+        return Leg.AccessLink(
+            index = 0,
+            transportMode = TransportMode.walk,
+            durationInMinutes = 10,
+            distanceInMeters = 720,
+            name = "Liseberg",
+            departTime = JourneyTimes.Planned(
+                time = Date(),
+                isLiveTracking = true,
+            ),
+            from = null,
+            to = null,
+            warnings = listOf(),
+        )
+    }
+
+    fun arrivalWalkLeg(): Leg.ArrivalLink {
+        return Leg.ArrivalLink(
+            index = 0,
+            transportMode = TransportMode.walk,
+            durationInMinutes = 10,
+            arriveTime = JourneyTimes.Planned(time = Date(), isLiveTracking = true),
+            distanceInMeters = 720,
+            name = "Smörkärnegatan 29",
+            destinationName = "Liseberg",
+            departTime = JourneyTimes.Planned(time = Date(), isLiveTracking = true),
+            from = null,
+            to = null,
+            warnings = listOf(),
         )
     }
 
@@ -75,6 +159,7 @@ object FakeFactory {
             warning = WarningTypes.MediumWarning,
             isDeparted = true,
             id = UUID.randomUUID().toString(),
+            detailsId = UUID.randomUUID().toString(),
             occupancyLevel = OccupancyLevel.MEDIUM,
             departure = Departure(
                 time = JourneyTimes.Planned(
@@ -88,6 +173,51 @@ object FakeFactory {
             )
         )
     }
+
+    fun lowWarnings() = listOf(
+        Warning(
+            severity = WarningSeverity.LOW,
+            message = "Low warning",
+        ),
+        Warning(
+            severity = WarningSeverity.LOW,
+            message = "Low warning",
+        ),
+        Warning(
+            severity = WarningSeverity.LOW,
+            message = "Low warning",
+        )
+    )
+
+    fun mediumWarnings() = listOf(
+        Warning(
+            severity = WarningSeverity.MEDIUM,
+            message = "Medium warning",
+        ),
+        Warning(
+            severity = WarningSeverity.MEDIUM,
+            message = "Medium warning",
+        ),
+        Warning(
+            severity = WarningSeverity.MEDIUM,
+            message = "Medium warning",
+        )
+    )
+
+    fun highWarnings() = listOf(
+        Warning(
+            severity = WarningSeverity.HIGH,
+            message = "High warning",
+        ),
+        Warning(
+            severity = WarningSeverity.HIGH,
+            message = "High warning",
+        ),
+        Warning(
+            severity = WarningSeverity.HIGH,
+            message = "High warning",
+        ),
+    )
 
     fun journeyList(count: Int = 10): List<Journey> {
         val result = mutableListOf<Journey>()
@@ -168,4 +298,21 @@ object FakeFactory {
         }
         return result.toList()
     }
+
+    fun legStopList(count: Int = 10): List<LegStop> {
+        val result = mutableListOf<LegStop>()
+        for (i in 1..count) {
+            result.add(
+                LegStop(
+                    id = i.toString(),
+                    name = i.toString() +" " +legStopNames.random(),
+                    time = legStopTimes.random(),
+                )
+            )
+        }
+        return result.toList()
+    }
+
+    private val legStopTimes = listOf("08:15", "08:22", "08:36", "08:42", "08:58", "09:15", "09:22", "09:36", "09:42", "09:58")
+    private val legStopNames = listOf("Järntorget", "Brunnsparken", "Centralstationen", "Nordstan", "Hjalmar Brantingsplatsen", "Järntorget", "Brunnsparken", "Centralstationen", "Nordstan", "Hjalmar Brantingsplatsen")
 }

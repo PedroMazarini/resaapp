@@ -79,6 +79,11 @@ class ResaAppState(
             HOME_JOURNEY_SELECTION.route
         )
     }
+    fun navToJourneyDetails() {
+        navController.navigate(
+            HOME_JOURNEY_DETAILS.route
+        )
+    }
 }
 
 enum class PayloadType {

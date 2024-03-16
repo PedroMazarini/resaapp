@@ -24,7 +24,6 @@ import com.resa.global.extensions.setHourMinute
 import com.resa.global.logd
 import com.resa.ui.model.Location
 import com.resa.ui.model.LocationType
-import com.resa.ui.navigation.HomeRoutes
 import com.resa.ui.screens.locationsearch.model.JourneyFilters
 import com.resa.ui.screens.locationsearch.state.CurrentSearchType.DESTINATION
 import com.resa.ui.screens.locationsearch.state.CurrentSearchType.ORIGIN
@@ -170,7 +169,7 @@ constructor(
             }
 
             is LocationSearchUiEvent.LocationResult ->
-                saveCurrentLocation(latitude = event.lat, longitude = event.lon)
+                saveCurrentLocation(name = event.name, latitude = event.lat, longitude = event.lon)
 
             is LocationSearchUiEvent.RequestLocation ->
                 uiState.currentLocationRequest.value = event.currentLocation
@@ -319,10 +318,10 @@ constructor(
         }
     }
 
-    private fun saveCurrentLocation(latitude: Double, longitude: Double) {
+    private fun saveCurrentLocation(latitude: Double, longitude: Double, name: String) {
         val location = Location(
             id = "",
-            name = "",
+            name = name,
             lat = latitude,
             lon = longitude,
             type = LocationType.gps,

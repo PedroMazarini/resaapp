@@ -11,6 +11,7 @@ fun NavGraphBuilder.addAppNavGraph(
     modifier: Modifier = Modifier,
     navToLocationSearch: () -> Unit,
     navToJourneySelection: () -> Unit,
+    navToJourneyDetails: () -> Unit,
     upPress: () -> Unit = {},
 ) {
     navigation(
@@ -21,6 +22,7 @@ fun NavGraphBuilder.addAppNavGraph(
             modifier = modifier,
             navToLocationSearch = navToLocationSearch,
             navToJourneySelection = navToJourneySelection,
+            navToJourneyDetails = navToJourneyDetails,
             upPress = upPress,
         )
     }

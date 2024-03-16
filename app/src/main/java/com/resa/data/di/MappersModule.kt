@@ -10,6 +10,7 @@ import com.resa.data.network.mappers.RemoteArrivalLinkToDomainLegMapper
 import com.resa.data.network.mappers.RemoteDepartLinkToDomainLegMapper
 import com.resa.data.network.mappers.RemoteLinkToDomainLegMapper
 import com.resa.data.network.mappers.RemoteToDomainJourneyMapper
+import com.resa.data.network.mappers.RemoteToDomainLegDetailsMapper
 import com.resa.data.network.mappers.RemoteToDomainLegMapper
 import com.resa.data.network.mappers.RemoteToDomainLocationMapper
 import com.resa.data.network.mappers.RemoteToDomainStopPointsMapper
@@ -109,5 +110,11 @@ object MappersModule {
     @Provides
     fun providesRemoteToDomainStopPointsMapper(): RemoteToDomainStopPointsMapper {
         return RemoteToDomainStopPointsMapper()
+    }
+
+    @Singleton
+    @Provides
+    fun providesRemoteToDomainLegDetailsMapper(): RemoteToDomainLegDetailsMapper {
+        return RemoteToDomainLegDetailsMapper()
     }
 }

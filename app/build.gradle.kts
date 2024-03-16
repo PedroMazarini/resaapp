@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.resa"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.activity)
     implementation(libs.compose.navigation)
+    implementation(libs.compose.constraintlayout)
 
     /* DI */
     implementation(libs.hilt)

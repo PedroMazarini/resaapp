@@ -55,6 +55,7 @@ fun JourneySelectionScreen(
     uiState: JourneySelectionUiState,
     onEvent: (JourneySelectionUiEvent) -> Unit,
     navigateToLocationSearch: (PayloadType) -> Unit,
+    navigateToJourneyDetails: () -> Unit,
     upPress: () -> Unit,
 ) {
 
@@ -67,6 +68,7 @@ fun JourneySelectionScreen(
             uiState = uiState,
             onEvent = onEvent,
             navigateToLocationSearch = navigateToLocationSearch,
+            navigateToJourneyDetails = navigateToJourneyDetails,
             upPress = upPress,
         )
     }
@@ -82,6 +84,7 @@ fun JourneySelectionList(
     onEvent: (JourneySelectionUiEvent) -> Unit,
     navigateToLocationSearch: (PayloadType) -> Unit,
     upPress: () -> Unit,
+    navigateToJourneyDetails: () -> Unit,
 ) {
     val upcomingJourneysResult by uiState.upcomingJourneys
     val upcomingJourneysPaging = upcomingJourneysResult.collectAsLazyPagingItems()
@@ -169,7 +172,10 @@ fun JourneySelectionList(
                         upcomingJourneysPaging[index]?.let { journey ->
                             JourneyItem(
                                 journey = journey,
-                            ) {}
+                            ) {
+                                onEvent(JourneySelectionUiEvent.JourneySelected(journey))
+                                navigateToJourneyDetails()
+                            }
                         }
                     }
                 } else {
@@ -248,9 +254,10 @@ fun JourneySelectionScreenPreview() {
                     flowOf(PagingData.from(FakeFactory.journeyList())),
                 )
             ),
-            navigateToLocationSearch = {},
             onEvent = {},
+            navigateToLocationSearch = {},
             upPress = {},
+            navigateToJourneyDetails = {},
         )
     }
 }

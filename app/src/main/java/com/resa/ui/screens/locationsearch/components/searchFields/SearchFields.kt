@@ -146,11 +146,16 @@ fun RequestLocationPermission(onEvent: (LocationSearchUiEvent) -> Unit) {
         stringResource(R.string.location_failed),
         Toast.LENGTH_LONG,
     )
+    val myLocationName = stringResource(id = R.string.my_location)
     RequestLocation {
         onEvent(LocationSearchUiEvent.RequestLocation(null))
         when (it) {
             is LocationAction.OnSuccess -> {
-                onEvent(LocationSearchUiEvent.LocationResult(lat = it.lat, lon = it.lon))
+                onEvent(LocationSearchUiEvent.LocationResult(
+                    name = myLocationName,
+                    lat = it.lat,
+                    lon = it.lon,
+                ))
             }
             else -> {
                 locationFailed.show()

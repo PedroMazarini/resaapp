@@ -29,11 +29,11 @@ fun LegBoxIcon(
 
     Card(
         modifier = modifier.height(20.dp),
-        border = BorderStroke(1.dp, legColors.border),
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(
             containerColor = legColors.background,
-        )
+        ),
+        border = BorderStroke(2.dp, legColors.border),
     ) {
         Box(
             modifier = Modifier.fillMaxHeight(),

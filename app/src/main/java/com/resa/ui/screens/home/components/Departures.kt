@@ -9,10 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -72,7 +70,7 @@ fun Departures(
     onEvent: (HomeUiEvent) -> Unit,
 ) {
 
-    val stopPointsState by homeUiState.stopPoints.collectAsState()
+    val stopPointsState by remember { homeUiState.stopPoints }
     val isRefreshing by remember {
         mutableStateOf(false)
     }
@@ -293,7 +291,7 @@ fun GetDeparturesAroundUseCasePreview() {
             modifier = Modifier
                 .fillMaxSize(),
             homeUiState = HomeUiState(
-                stopPoints = MutableStateFlow(
+                stopPoints = mutableStateOf(
                     StopPointsState.Loaded(
                         stopPoints = FakeFactory.stopPointList()
                     )

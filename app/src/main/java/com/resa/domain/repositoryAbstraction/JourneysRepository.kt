@@ -6,6 +6,7 @@ import com.resa.domain.model.journey.Journey
 import com.resa.domain.model.journey.JourneyResult
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface JourneysRepository {
 
@@ -22,4 +23,10 @@ interface JourneysRepository {
     suspend fun getAllSavedJourneySearch(): Flow<List<JourneySearch>>
     suspend fun saveRecentJourneySearch(journeySearch: JourneySearch)
     suspend fun getAllRecentJourneySearch(): Flow<List<JourneySearch>>
+
+    suspend fun fetchSelectedJourneyDetails()
+
+    fun setSelectedJourney(journey: Journey)
+
+    suspend fun getSelectedJourney(): StateFlow<Journey?>
 }

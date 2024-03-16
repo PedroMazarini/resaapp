@@ -7,7 +7,8 @@ import com.resa.data.cache.service.SavedJourneySearchCacheService
 import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.domain.model.JourneySearch
 import com.resa.domain.model.journey.Journey
-import com.resa.domain.model.journey.JourneyResult
+import com.resa.domain.model.journey.Leg
+import com.resa.domain.model.journey.LegDetails
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.repositoryAbstraction.JourneysRepository
 import com.resa.global.JsonEncoder
@@ -16,6 +17,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,6 +33,8 @@ constructor(
     private val savedJourneySearchService: SavedJourneySearchCacheService,
     private val recentJourneySearchService: RecentJourneySearchCacheService,
 ) : JourneysRepository {
+
+    private val selectedJourney: MutableStateFlow<Journey?> = MutableStateFlow(null)
 
     init {
         clearOldJourneySearches()
@@ -91,4 +96,38 @@ constructor(
 
     override suspend fun getAllRecentJourneySearch(): Flow<List<JourneySearch>> =
         recentJourneySearchService.getAllJourneySearches()
+
+    override suspend fun fetchSelectedJourneyDetails() {
+        selectedJourney.value?.let {
+            journeysDatasource.getJourneyDetails(
+                detailsRef = it.detailsId,
+                token = getToken(),
+            ).onSuccess {
+                updateSelectedJourney(it)
+            }
+        }
+    }
+
+    override fun setSelectedJourney(journey: Journey) {
+        selectedJourney.value = journey
+    }
+
+    override suspend fun getSelectedJourney(): StateFlow<Journey?> = selectedJourney
+
+    private fun updateSelectedJourney(legsDetails: List<LegDetails>) {
+        val updatedLegs = selectedJourney.value?.legs?.map { leg ->
+            when (leg) {
+                is Leg.Transport -> {
+                    val details = legsDetails.firstOrNull {
+                        it is LegDetails.Details && it.index == leg.index
+                    } ?: leg.details
+                    leg.copy(details = details)
+                }
+                else -> leg
+            }
+        }
+        updatedLegs?.let {
+            selectedJourney.value = selectedJourney.value?.copy(legs = it)
+        }
+    }
 }

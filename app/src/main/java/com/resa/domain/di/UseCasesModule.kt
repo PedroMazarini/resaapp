@@ -8,12 +8,16 @@ import com.resa.domain.usecases.RefreshTokenUseCase
 import com.resa.domain.usecases.RefreshTokenUseCaseImpl
 import com.resa.domain.usecases.journey.DeleteSavedJourneySearchUseCase
 import com.resa.domain.usecases.journey.DeleteSavedJourneySearchUseCaseImpl
+import com.resa.domain.usecases.journey.FetchSelectedJourneyDetailsUseCase
+import com.resa.domain.usecases.journey.FetchSelectedJourneyDetailsUseCaseImpl
 import com.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCase
 import com.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCaseImpl
 import com.resa.domain.usecases.journey.GetRecentJourneySearchesUseCase
 import com.resa.domain.usecases.journey.GetRecentJourneySearchesUseCaseImpl
 import com.resa.domain.usecases.journey.GetSavedJourneySearchesUseCase
 import com.resa.domain.usecases.journey.GetSavedJourneySearchesUseCaseImpl
+import com.resa.domain.usecases.journey.GetSelectedJourneyUseCase
+import com.resa.domain.usecases.journey.GetSelectedJourneyUseCaseImpl
 import com.resa.domain.usecases.journey.QueryJourneysUseCase
 import com.resa.domain.usecases.journey.QueryJourneysUseCaseImpl
 import com.resa.domain.usecases.journey.QueryPassedJourneysUseCase
@@ -24,6 +28,8 @@ import com.resa.domain.usecases.journey.SaveJourneySearchUseCase
 import com.resa.domain.usecases.journey.SaveJourneySearchUseCaseImpl
 import com.resa.domain.usecases.journey.SaveRecentJourneySearchUseCase
 import com.resa.domain.usecases.journey.SaveRecentJourneySearchUseCaseImpl
+import com.resa.domain.usecases.journey.SetSelectedJourneyUseCase
+import com.resa.domain.usecases.journey.SetSelectedJourneyUseCaseImpl
 import com.resa.domain.usecases.location.DeleteSavedLocationUseCase
 import com.resa.domain.usecases.location.DeleteSavedLocationUseCaseImpl
 import com.resa.domain.usecases.location.GetRecentLocationsUseCase
@@ -215,6 +221,35 @@ object UseCasesModule {
     ): GetDeparturesAroundUseCase {
         return GetDeparturesAroundUseCaseImpl(
             stopPointsRepository = stopPointsRepository,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesFetchSelectedJourneyDetailsUseCase(
+        journeysRepository: JourneysRepository,
+    ): FetchSelectedJourneyDetailsUseCase {
+        return FetchSelectedJourneyDetailsUseCaseImpl(
+            journeysRepository = journeysRepository,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesGetSelectedJourneyUseCase(
+        journeysRepository: JourneysRepository,
+    ): GetSelectedJourneyUseCase {
+        return GetSelectedJourneyUseCaseImpl(
+            journeysRepository = journeysRepository,
+        )
+    }
+    @Singleton
+    @Provides
+    fun providesSetSelectedJourneyUseCase(
+        journeysRepository: JourneysRepository,
+    ): SetSelectedJourneyUseCase {
+        return SetSelectedJourneyUseCaseImpl(
+            journeysRepository = journeysRepository,
         )
     }
 }

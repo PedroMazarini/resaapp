@@ -20,9 +20,8 @@ typealias DomainStopPoints = List<DomainStopPoint>
 
 class RemoteToDomainStopPointsMapper {
 
-    private val stopPointMap = mutableMapOf<String, DomainStopPoint>()
-
     fun map(value: RemoteDepartOrArrive): DomainStopPoints {
+        val stopPointMap = mutableMapOf<String, DomainStopPoint>()
         try {
             value.forEach { departOrArrive ->
                 stopPointMap.putIfAbsent(
@@ -100,12 +99,12 @@ class RemoteToDomainStopPointsMapper {
             estimatedOtherwisePlannedTime -> JourneyTimes.Changed(
                 estimated = estimatedTime?.parseRfc3339()
                     ?: error("Journey time could not be parsed"),
-                planned = plannedTime.parseRfc3339() ?: error("Journey time could not be parsed"),
+                planned = plannedTime.parseRfc3339() ?: error("Estimated journey time could not be parsed ($estimatedTime)"),
                 isLiveTracking = true,
             )
 
             else -> JourneyTimes.Planned(
-                time = estimatedTime?.parseRfc3339() ?: error("Journey time could not be parsed"),
+                time = plannedTime.parseRfc3339() ?: error("Planned journey time could not be parsed ($plannedTime)"),
                 isLiveTracking = false,
             )
         }

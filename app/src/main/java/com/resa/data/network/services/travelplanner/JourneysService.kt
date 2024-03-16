@@ -1,8 +1,10 @@
 package com.resa.data.network.services.travelplanner
 
+import com.resa.data.network.model.travelplanner.journeydetails.JourneyDetailsResponse
 import com.resa.data.network.model.travelplanner.journeys.GetJourneysResponse
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.QueryMap
 import retrofit2.http.Url
@@ -22,6 +24,13 @@ interface JourneysService {
         @Header("Authorization") auth: String,
         @Url params: String,
     ): GetJourneysResponse
+
+    @GET("/pr/v4/journeys/{detailsRef}/details")
+    suspend fun getJourneyDetails(
+        @Header("Authorization") auth: String,
+        @Path("detailsRef") detailsRef: String,
+        @Query("includes") includes: String = "tripLegCoordinates",
+    ): JourneyDetailsResponse
 
     companion object {
         const val PAGE_SIZE = 10

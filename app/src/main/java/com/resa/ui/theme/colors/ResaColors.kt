@@ -21,6 +21,12 @@ class ResaColors(
     ultraLightDetail: Color,
     separatorLight: Color,
     shimmer: Color,
+    warningLow: Color,
+    warningMedium: Color,
+    warningHigh: Color,
+    warningLowBg: Color,
+    warningMediumBg: Color,
+    warningHighBg: Color,
 ) {
     var primary by mutableStateOf(primary)
         private set
@@ -46,13 +52,25 @@ class ResaColors(
         private set
     var lightDetail by mutableStateOf(lightDetail)
         private set
-    var lightText by mutableStateOf(lightDetail)
+    var lightText by mutableStateOf(lightText)
         private set
     var ultraLightDetail by mutableStateOf(ultraLightDetail)
         private set
     var separatorLight by mutableStateOf(separatorLight)
         private set
     var shimmer by mutableStateOf(shimmer)
+        private set
+    var warningLow by mutableStateOf(warningLow)
+        private set
+    var warningMedium by mutableStateOf(warningMedium)
+        private set
+    var warningHigh by mutableStateOf(warningHigh)
+        private set
+    var warningLowBg by mutableStateOf(warningLowBg)
+        private set
+    var warningMediumBg by mutableStateOf(warningMediumBg)
+        private set
+    var warningHighBg by mutableStateOf(warningHighBg)
         private set
 
     fun update(other: ResaColors) {
@@ -72,6 +90,12 @@ class ResaColors(
         ultraLightDetail = other.ultraLightDetail
         separatorLight = other.separatorLight
         shimmer = other.shimmer
+        warningLow = other.warningLow
+        warningMedium = other.warningMedium
+        warningHigh = other.warningHigh
+        warningLowBg = other.warningLowBg
+        warningMediumBg = other.warningMediumBg
+        warningHighBg = other.warningHighBg
     }
 
     fun copy(): ResaColors = ResaColors(
@@ -91,5 +115,11 @@ class ResaColors(
         ultraLightDetail = ultraLightDetail,
         separatorLight = separatorLight,
         shimmer = shimmer,
+        warningLow = warningLow,
+        warningMedium = warningMedium,
+        warningHigh = warningHigh,
+        warningLowBg = warningLowBg,
+        warningMediumBg = warningMediumBg,
+        warningHighBg = warningHighBg,
     )
 }

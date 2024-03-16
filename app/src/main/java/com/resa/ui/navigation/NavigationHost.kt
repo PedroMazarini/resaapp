@@ -25,6 +25,7 @@ fun NavigationHost() {
             addAppNavGraph(
                 navToLocationSearch = appState::navToLocationSearch,
                 navToJourneySelection = appState::navToJourneySelection,
+                navToJourneyDetails = appState::navToJourneyDetails,
                 upPress = appState::upPress,
             )
         }

@@ -1,5 +1,6 @@
 package com.resa.domain.model.journey
 
+import com.resa.global.extensions.withinAMinute
 import java.util.Date
 
 sealed class JourneyTimes {
@@ -21,6 +22,13 @@ sealed class JourneyTimes {
         return when (this) {
             is Planned -> time.before(Date())
             is Changed -> estimated.before(Date())
+        }
+    }
+
+    fun isWithinAMinute(): Boolean {
+        return when (this) {
+            is Planned -> time.withinAMinute(Date().time)
+            is Changed -> estimated.withinAMinute(Date().time)
         }
     }
 }

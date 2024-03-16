@@ -43,7 +43,7 @@ constructor(
                         stopPointGid = gid,
                     )
                     response.results?.let { results ->
-                            stopPoints.addAll(remoteToDomainStopPointsMapper.map(results))
+                        stopPoints.addAll(remoteToDomainStopPointsMapper.map(results))
                     }
                 }?: run {
                     return Result.failure(NullPointerException("gid is null"))

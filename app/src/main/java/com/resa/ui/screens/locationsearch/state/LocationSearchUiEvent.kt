@@ -13,7 +13,7 @@ sealed class LocationSearchUiEvent {
     object ClearDest : LocationSearchUiEvent()
     object NavigateToResults : LocationSearchUiEvent()
     data class RequestLocation(val currentLocation: CurrentLocation?) : LocationSearchUiEvent()
-    data class LocationResult(val lat: Double, val lon: Double) : LocationSearchUiEvent()
+    data class LocationResult(val lat: Double, val lon: Double, val name: String) : LocationSearchUiEvent()
     data class OriginSearchChanged(val query: String) : LocationSearchUiEvent()
     data class DestSearchChanged(val query: String) : LocationSearchUiEvent()
     data class LocationSelected(val location: Location) : LocationSearchUiEvent()

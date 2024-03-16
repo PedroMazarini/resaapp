@@ -3,6 +3,8 @@ package com.resa.ui.screens.home.state
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.resa.data.network.services.RetrofitService
+import com.resa.data.network.services.travelplanner.JourneysService
 import com.resa.domain.model.Coordinate
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo
@@ -12,6 +14,7 @@ import com.resa.domain.usecases.journey.GetSavedJourneySearchesUseCase
 import com.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
 import com.resa.domain.usecases.stoparea.GetDeparturesAroundUseCase
 import com.resa.global.extensions.rfc3339
+import com.resa.global.preferences.PrefsProvider
 import com.resa.ui.model.JourneySearch
 import com.resa.ui.screens.home.model.SavedJourneyState
 import com.resa.ui.screens.home.model.StopPointsState
@@ -24,8 +27,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import java.util.Date
-import java.util.Timer
-import java.util.TimerTask
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,30 +60,30 @@ constructor(
 //        uiState.currentLocation.value = Coordinate(lat = 53.391628, lon = 36.784628) // Russia
 //        uiState.currentLocation.value = Coordinate(lat = 57.708386, lon = 11.972655) // Nordstan-Centrastationen
         uiState.currentLocation.value = Coordinate(lat = lat, lon = lon)
-        setDeparturesLoading()
+        uiState.stopPoints.value = StopPointsState.Loading
         viewModelScope.launch(Dispatchers.IO) {
-            uiState.currentLocation.value?.let {coordinate ->
+            uiState.currentLocation.value?.let { coordinate ->
                 getDeparturesAroundUseCase(coordinate)
                     .onSuccess { stopPoints ->
-                            Log.e("HomeViewModel", "stopPoints: ${stopPoints.first().departures.size}")
-                            uiState.isDeparturesReloading.value = false
-                            uiState.stopPoints.value = stopPoints.filterByDepartures()
-                                .takeIf { it.isNotEmpty() }?.let {
-                                    StopPointsState.Loaded(it)
-                                } ?: StopPointsState.Error("No departures found")
+                        Log.e(
+                            "HomeViewModel", "VM stopPoints: ${stopPoints.size} " +
+                                    "first departures: ${stopPoints.first().departures.size}"
+                        )
+                        uiState.isDeparturesReloading.value = false
+                        stopPoints
+                            .filterByDepartures()
+                            .takeIf { it.isNotEmpty() }?.let {
+                                uiState.stopPoints.value = StopPointsState.Loaded(it)
+                            } ?: run {
+                            uiState.stopPoints.value = StopPointsState.Error("No departures found")
+                        }
                     }.onFailure { throwable ->
                         uiState.isDeparturesReloading.value = false
                         setDeparturesFailed(throwable.message ?: "")
                     }
-            }?: run {
+            } ?: run {
                 setDeparturesFailed("No location found")
             }
-        }
-    }
-
-    private fun setDeparturesLoading() {
-        if (uiState.stopPoints.value !is StopPointsState.Loaded) {
-            uiState.stopPoints.value = StopPointsState.Loading
         }
     }
 
@@ -116,7 +117,7 @@ constructor(
             is HomeUiEvent.UpdateGpsRequest -> updateGpsRequest(event)
             is HomeUiEvent.LocationResult -> executePendingLocationUse(event.lat, event.lon)
             is HomeUiEvent.CheckedPermission -> setCheckPermissionResult(event.hasPermission)
-            is HomeUiEvent.RefreshDepartures -> refreshDepartures()
+            is HomeUiEvent.RefreshDepartures -> {}//refreshDepartures()
             is HomeUiEvent.ClearLoadingSavedJourneys -> clearLoadingSavedJourneys()
         }
     }
@@ -152,7 +153,7 @@ constructor(
     }
 
     private fun executePendingLocationUse(lat: Double, lon: Double) {
-        when(uiState.pendingLocationUses.value) {
+        when (uiState.pendingLocationUses.value) {
             PendingLocationUse.SEARCH_SAVED_JOURNEY -> updateJourneySearchWithLocation(lat, lon)
             PendingLocationUse.SEARCH_DEPARTURES_AROUND -> loadDeparturesAround(lat, lon)
             else -> {}
@@ -192,7 +193,7 @@ constructor(
     private fun setSavedJourneyLoading(id: Int) {
         (uiState.savedJourneyState.value as? SavedJourneyState.Loaded)?.let { savedJourneys ->
             val updatedJourneys = savedJourneys.journeys.map {
-                if(it.id == id) it.copy(isLoading = true) else it
+                if (it.id == id) it.copy(isLoading = true) else it
             }
             uiState.savedJourneyState.value = SavedJourneyState.Loaded(updatedJourneys)
         }

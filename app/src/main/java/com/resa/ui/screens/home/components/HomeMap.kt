@@ -20,9 +20,7 @@ fun HomeMap(
     val hasLocationAccess by remember { uiState.hasLocationPermission }
     val currentLocation by remember { uiState.currentLocation }
 
-    loge(">>>>> HomeMap: hasLocationAccess: $hasLocationAccess, currentLocation: $currentLocation")
     val zoomType = getZoomType(hasLocationAccess, currentLocation)
-    loge(">>>>> HomeMap: zoomType: $zoomType")
     StaticMaps(
         modifier = modifier,
         mapsZoomType = zoomType

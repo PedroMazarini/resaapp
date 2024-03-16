@@ -21,6 +21,10 @@ fun TextStyle.strikeThrough(): TextStyle =
 fun TextStyle.asAlert(): TextStyle =
     this.copy(color = MTheme.colors.alert)
 
+@Composable
+fun TextStyle.asPrimary(): TextStyle =
+    this.copy(color = MTheme.colors.primary)
+
 fun TextStyle.fontSize(size: TextUnit): TextStyle =
     this.copy(fontSize = size)
 

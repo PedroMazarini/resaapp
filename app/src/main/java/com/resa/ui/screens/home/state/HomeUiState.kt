@@ -9,14 +9,14 @@ import com.resa.ui.screens.home.model.StopPointsState
 import kotlinx.coroutines.flow.MutableStateFlow
 
 data class HomeUiState(
-    var savedJourneyState: MutableState<SavedJourneyState> = mutableStateOf(SavedJourneyState.Loading),
-    var navigateToJourneySelection: MutableState<Boolean> = mutableStateOf(false),
-    var requestGpsLocation: MutableState<Boolean> = mutableStateOf(false),
-    var hasLocationPermission: MutableState<Boolean> = mutableStateOf(false),
-    var hasCheckedPermission: MutableState<Boolean> = mutableStateOf(false),
-    var journeySearchRequest: MutableState<JourneySearch?> = mutableStateOf(null),
-    var stopPoints: MutableStateFlow<StopPointsState> = MutableStateFlow(StopPointsState.Loading),
-    var currentLocation: MutableState<Coordinate?> = mutableStateOf(null),
-    var pendingLocationUses: MutableState<HomeViewModel.PendingLocationUse> = mutableStateOf(HomeViewModel.PendingLocationUse.NONE),
-    var isDeparturesReloading: MutableState<Boolean> = mutableStateOf(false),
+    val savedJourneyState: MutableState<SavedJourneyState> = mutableStateOf(SavedJourneyState.Loading),
+    val navigateToJourneySelection: MutableState<Boolean> = mutableStateOf(false),
+    val requestGpsLocation: MutableState<Boolean> = mutableStateOf(false),
+    val hasLocationPermission: MutableState<Boolean> = mutableStateOf(false),
+    val hasCheckedPermission: MutableState<Boolean> = mutableStateOf(false),
+    val journeySearchRequest: MutableState<JourneySearch?> = mutableStateOf(null),
+    val stopPoints: MutableState<StopPointsState> = mutableStateOf(StopPointsState.Loading),
+    val currentLocation: MutableState<Coordinate?> = mutableStateOf(null),
+    val pendingLocationUses: MutableState<HomeViewModel.PendingLocationUse> = mutableStateOf(HomeViewModel.PendingLocationUse.NONE),
+    val isDeparturesReloading: MutableState<Boolean> = mutableStateOf(false),
 )

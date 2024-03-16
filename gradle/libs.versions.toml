@@ -33,6 +33,7 @@ google-location = "21.0.1"
 google-maps = "18.2.0"
 google-maps-compose = "4.3.2"
 pullRefresh = "1.0.0"
+constraintlayout-compose = "1.0.1"
 
 [libraries]
 # KotlinX
@@ -53,6 +54,7 @@ compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling
 compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 compose-runtime = { group = "androidx.compose.runtime", name = "runtime-livedata" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+compose-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout-compose" }
 
 # DI
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }

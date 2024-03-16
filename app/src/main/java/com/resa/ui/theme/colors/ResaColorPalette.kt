@@ -19,6 +19,12 @@ internal val DarkColorPalette = ResaColors(
     ultraLightDetail = Color.Black,
     separatorLight = Color.Black,
     shimmer = Color.LightGray,
+    warningLow = TangerineYellow,
+    warningMedium = AtomicTangerine,
+    warningHigh = Mahogany,
+    warningLowBg = EarlyDawn,
+    warningMediumBg = Serenade,
+    warningHighBg = FairPink,
 )
 
 internal val LightColorPalette = ResaColors(
@@ -26,7 +32,7 @@ internal val LightColorPalette = ResaColors(
     secondary = Yellow400,
     background = Color.White,
     textPrimary = Black900,
-    textSecondary = Black900_60,
+    textSecondary = Black900_85,
     textTertiary = Black400,
     alert = Color.Red,
     icon = Yellow700,
@@ -34,8 +40,14 @@ internal val LightColorPalette = ResaColors(
     btnBackground = Black900_4,
     btnSecondaryBkg = White_35,
     lightDetail = Black900_20,
-    lightText = Black900_50,
+    lightText = Black900_75,
     ultraLightDetail = Black900_3,
     separatorLight = Black900_8,
     shimmer = Color.LightGray,
+    warningLow = TangerineYellow,
+    warningMedium = AtomicTangerine,
+    warningHigh = Mahogany,
+    warningLowBg = EarlyDawn,
+    warningMediumBg = Serenade,
+    warningHighBg = FairPink,
 )

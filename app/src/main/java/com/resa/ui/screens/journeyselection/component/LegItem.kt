@@ -50,19 +50,18 @@ fun LegItem(
         )
 
         when (leg) {
-            is Leg.AccessLink -> {
-                Text(
-                    modifier = Modifier.padding(top = 9.dp, start = 2.dp),
-                    text = leg.durationInMinutes.toString(),
-                    style = MTheme.type.tertiaryLightText,
-                )
-            }
-
             is Leg.Transport -> {
                 LegBoxIcon(
                     modifier = Modifier.padding(start = 12.dp),
                     legName = leg.name,
                     legColors = leg.colors,
+                )
+            }
+            else -> {
+                Text(
+                    modifier = Modifier.padding(top = 9.dp, start = 2.dp),
+                    text = leg.durationInMinutes.toString(),
+                    style = MTheme.type.tertiaryLightText,
                 )
             }
         }

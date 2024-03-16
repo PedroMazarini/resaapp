@@ -1,7 +1,5 @@
 package com.resa.domain.model
 
-import com.squareup.moshi.JsonClass
-
 /**
  * Values: unknown,none,tram,bus,ferry,train,taxi,walk,bike,car
  */
@@ -15,5 +13,11 @@ enum class TransportMode {
     taxi,
     walk,
     bike,
-    car,
+    car;
+
+    companion object {
+        fun TransportMode.isWalkOrBike(): Boolean {
+            return this == walk || this == bike
+        }
+    }
 }

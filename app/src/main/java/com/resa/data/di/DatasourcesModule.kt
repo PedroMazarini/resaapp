@@ -1,17 +1,19 @@
 package com.resa.data.di
 
-import com.resa.data.network.datasource.abstraction.AuthenticationDatasource
 import com.resa.data.network.datasource.AuthenticationDatasourceImpl
-import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.data.network.datasource.JourneysDatasourceImpl
 import com.resa.data.network.datasource.LocationsDatasourceImpl
 import com.resa.data.network.datasource.StopPointsDatasourceImpl
+import com.resa.data.network.datasource.abstraction.AuthenticationDatasource
+import com.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.resa.data.network.datasource.abstraction.LocationsDatasource
 import com.resa.data.network.datasource.abstraction.StopPointsDatasource
-import com.resa.data.network.mappers.RemoteToDomainLocationMapper
 import com.resa.data.network.mappers.RemoteToDomainJourneyMapper
+import com.resa.data.network.mappers.RemoteToDomainLegDetailsMapper
+import com.resa.data.network.mappers.RemoteToDomainLocationMapper
 import com.resa.data.network.mappers.RemoteToDomainStopPointsMapper
 import com.resa.data.network.services.RetrofitService
+import com.resa.data.network.services.travelplanner.JourneysService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,9 +36,15 @@ object DatasourcesModule {
     @Provides
     fun providesJourneysDatasource(
         remoteToDomainJourneyMapper: RemoteToDomainJourneyMapper,
+        remoteToDomainLegDetailsMapper: RemoteToDomainLegDetailsMapper,
     ): JourneysDatasource {
         return JourneysDatasourceImpl(
             remoteToDomainJourneyMapper = remoteToDomainJourneyMapper,
+            remoteToDomainLegDetailsMapper = remoteToDomainLegDetailsMapper,
+            journeysService = RetrofitService.getInstance(
+                JourneysService::class.java,
+                baseUrl = RetrofitService.BASE_URL_AUTH,
+            ),
         )
     }
 

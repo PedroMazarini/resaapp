@@ -15,6 +15,8 @@ val Blue400 = Color(0xFF4DA0FF)
 val Test333 = Color(0x30FFFFFF)
 
 val Black900_60 = Color(0x99000C1A)
+val Black900_85 = Color(0xD9000C1A)
+val Black900_75 = Color(0xBF000C1A)
 val Black900_50 = Color(0x80000C1A)
 val Black900_40 = Color(0x66000C1A)
 val Black900_20 = Color(0x33000C1A)
@@ -37,5 +39,9 @@ val Yellow700 = Color(0xFFFFC700)
 val TangerineYellow = Color(0xFFFFCC00)
 val AtomicTangerine = Color(0xFFFF9966)
 val Mahogany = Color(0xFFCC3300)
+val EarlyDawn = Color(0xFFFFFAE5)
+val Serenade = Color(0xFFFFEEE5)
+val FairPink = Color(0xFFFFECE5)
+
 
 val backgroundDark = Color(0xFF3A3A3A)

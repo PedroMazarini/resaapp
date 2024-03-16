@@ -3,14 +3,15 @@ package com.resa.ui.screens.journeyselection.state
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.resa.domain.model.JourneySearch
+import com.resa.domain.model.journey.Journey
 import com.resa.domain.model.queryjourneys.QueryJourneysParams
-import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo
 import com.resa.domain.model.queryjourneys.QueryJourneysRelatesTo.*
 import com.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCase
 import com.resa.domain.usecases.journey.QueryJourneysUseCase
 import com.resa.domain.usecases.journey.QueryPassedJourneysUseCase
 import com.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
 import com.resa.domain.usecases.journey.SaveJourneySearchUseCase
+import com.resa.domain.usecases.journey.SetSelectedJourneyUseCase
 import com.resa.global.extensions.parseRfc3339
 import com.resa.global.extensions.rfc3339
 import com.resa.global.extensions.setDateOnly
@@ -18,7 +19,6 @@ import com.resa.global.extensions.setHourMinute
 import com.resa.global.logd
 import com.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent.*
 import com.resa.ui.screens.locationsearch.model.JourneyFilters
-import com.resa.ui.screens.locationsearch.state.LocationSearchUiEvent
 import com.resa.ui.util.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -36,6 +36,7 @@ constructor(
     private val getCurrentJourneyQueryUseCase: GetCurrentJourneyQueryUseCase,
     private val saveJourneySearchUseCase: SaveJourneySearchUseCase,
     private val saveCurrentJourneyQueryUseCase: SaveCurrentJourneyQueryUseCase,
+    private val setSelectedJourneyUseCase: SetSelectedJourneyUseCase,
 ) : ViewModel() {
 
     val uiState: JourneySelectionUiState = JourneySelectionUiState()
@@ -83,7 +84,17 @@ constructor(
             is TimeFilterChanged -> setTimeFilter(event.date)
             SaveCurrentJourneySearch -> saveCurrentJourneySearch()
             UpdateJourneySearch -> updateJourneySearch()
+            is JourneySelected -> setJourneySelected(event.journey)
         }
+    }
+
+    private fun setJourneySelected(journey: Journey) {
+        setSelectedJourneyUseCase(
+            journey.copy(
+                originName = uiState.queryParams.value.originName,
+                destName = uiState.queryParams.value.destinationName,
+            )
+        )
     }
 
     private fun updateJourneySearch() {

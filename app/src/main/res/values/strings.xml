@@ -35,11 +35,13 @@
     <string name="saved">Saved</string>
     <string name="recent">Recent</string>
     <string name="departures">Departures</string>
+    <string name="travel_time">Travel time</string>
     <string name="line">Line</string>
     <string name="depart_in">Depart in</string>
     <string name="next_in">Next in</string>
     <string name="hour_abbreviation">h</string>
     <string name="minute_abbreviation">m</string>
+    <string name="min">min</string>
     <string name="minute_with_abbreviation">%1$sm</string>
     <string name="duration">Duration</string>
     <string name="live">Live</string>
@@ -54,4 +56,6 @@
     <string name="allow_location_btn">Allow Location</string>
     <string name="no_departures_found">Oh no! \nNo departures were found.</string>
     <string name="try_again">Try again</string>
+    <string name="ride_n_stops">Ride %1$s stops (%2$s)</string>
+    <string name="walk_min_distance">Walk %1$s min (%2$s m)</string>
 </resources>

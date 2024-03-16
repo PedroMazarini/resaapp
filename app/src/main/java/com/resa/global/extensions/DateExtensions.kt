@@ -3,6 +3,7 @@ package com.resa.global.extensions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.resa.R
+import com.resa.domain.model.journey.JourneyTimes
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -23,6 +24,9 @@ infix fun Date.addDays(days: Int): Date {
     now.add(Calendar.DAY_OF_YEAR, days)
     return now.time
 }
+
+infix fun Date.withinAMinute(now: Long) = this.time - now in (-60000..0)
+
 
 infix fun Date.minusDays(days: Int): Date {
     return this addDays -days
@@ -57,7 +61,7 @@ fun formatMinutes(minutes: Int): String {
     val date = Date(minutes * 60L * 1000L)
     val formattedMinutes = sdf.format(date)
     val h = stringResource(id = R.string.hour_abbreviation)
-    val m = stringResource(id = R.string.minute_abbreviation)
+    val m = stringResource(id = R.string.min)
 
     return if (minutes >= 60) {
         val hours = minutes / 60
@@ -133,4 +137,11 @@ fun Date.getHour(): Int {
     val calendar = Calendar.getInstance()
     calendar.time = this
     return calendar.get(Calendar.HOUR_OF_DAY)
+}
+
+fun Date.addMinutes(minutes: Int): Date {
+    val calendar = Calendar.getInstance()
+    calendar.time = this
+    calendar.add(Calendar.MINUTE, minutes)
+    return calendar.time
 }

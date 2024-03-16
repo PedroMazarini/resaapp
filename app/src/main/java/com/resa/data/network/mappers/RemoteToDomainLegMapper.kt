@@ -1,11 +1,20 @@
 package com.resa.data.network.mappers
 
 import androidx.compose.ui.graphics.Color
+import com.resa.data.network.model.travelplanner.journeys.response.ConnectionLink
+import com.resa.data.network.model.travelplanner.journeys.response.Severity
+import com.resa.domain.model.journey.JourneyTimes
 import com.resa.domain.model.journey.LegColors
+import com.resa.domain.model.journey.LegDetails
+import com.resa.domain.model.journey.Warning
+import com.resa.domain.model.journey.WarningSeverity
 import com.resa.global.Mapper
 import com.resa.global.extensions.asColor
+import com.resa.global.extensions.orThrow
+import com.resa.global.extensions.parseRfc3339
 import com.resa.global.loge
 import com.resa.ui.theme.colors.FrenchBlue
+import com.resa.ui.util.MappingException
 import com.resa.data.network.model.travelplanner.journeys.response.TransportMode as RemoteTransportMode
 import com.resa.data.network.model.travelplanner.journeys.response.TripLeg as RemoteLeg
 import com.resa.domain.model.TransportMode as DomainTransportMode
@@ -20,7 +29,49 @@ class RemoteToDomainLegMapper : Mapper<RemoteLeg, DomainLeg> {
             transportMode = value.getTransportMode(),
             durationInMinutes = value.getDuration(),
             colors = value.getColors(),
+            departTime = value.getTime(),
+            warnings = value.getWarnings(),
+            details = LegDetails.None,
+            distanceInMeters = value.estimatedDistanceInMeters ?: 0,
         )
+
+    private fun RemoteLeg.getWarnings(): List<Warning> {
+        return notes?.map {
+            Warning(
+                message = it.text.orEmpty(),
+                severity = it.severity?.let { severity ->
+                    when (severity) {
+                        Severity.normal -> WarningSeverity.MEDIUM
+                        Severity.high -> WarningSeverity.HIGH
+                        else -> WarningSeverity.LOW
+                    }
+                } ?: WarningSeverity.LOW
+            )
+        }.orEmpty()
+    }
+
+    private fun RemoteLeg.getTime(): JourneyTimes {
+        return try {
+            if (isDepartureAsPlanned()) {
+                JourneyTimes.Planned(
+                    time = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = false,
+                )
+            } else {
+                JourneyTimes.Changed(
+                    planned = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    estimated = estimatedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = true,
+                )
+            }
+        } catch (e: Exception) {
+            loge("$TAG failed to map Time: ${e.message}")
+            error(e)
+        }
+    }
+
+    private fun RemoteLeg.isDepartureAsPlanned(): Boolean =
+        plannedDepartureTime == estimatedOtherwisePlannedDepartureTime
 
     private fun RemoteLeg.getDuration(): Int =
         estimatedDurationInMinutes ?: plannedDurationInMinutes ?: 0

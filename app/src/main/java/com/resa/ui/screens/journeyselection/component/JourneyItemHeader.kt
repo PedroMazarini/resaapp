@@ -43,8 +43,10 @@ import com.resa.ui.theme.MTheme
 import com.resa.ui.theme.ResaTheme
 import com.resa.ui.util.TimeUpdateInterval
 import com.resa.ui.util.asAlert
+import com.resa.ui.util.asPrimary
 import com.resa.ui.util.color
 import com.resa.ui.util.fontSize
+import com.resa.ui.util.getDepartText
 import com.resa.ui.util.getTimeUpdate
 import com.resa.ui.util.strikeThrough
 
@@ -192,43 +194,13 @@ fun getDepartText(journey: Journey, now: Long): String {
         is JourneyTimes.Planned -> departTime.time
         is JourneyTimes.Changed -> departTime.estimated
     }
-
-    return when {
-        departDate.isAfter24h() -> {
-            stringResource(
-                id = R.string.depart_future,
-                departDate.date_MMM_dd(),
-                departDate.time_HH_mm(),
-            )
-        }
-
-        departDate.isAfter1h() -> {
-            stringResource(
-                id = R.string.depart_today,
-                departDate.time_HH_mm(),
-            )
-        }
-
-        journey.isOnlyWalk() -> {
-            stringResource(
-                id = R.string.depart_now,
-                departDate.minutesFrom(now),
-            )
-        }
-
-        journey.isDeparted || journey.departure.isBefore(now) -> {
-            stringResource(
-                id = R.string.departed_past,
-                departDate.time_HH_mm(),
-            )
-        }
-
-        else -> {
-            stringResource(
-                id = R.string.depart_in_m,
-                departDate.minutesFrom(now),
-            )
-        }
+    return if (journey.isOnlyWalk()) {
+        stringResource(
+            id = R.string.depart_now,
+            departDate.minutesFrom(now),
+        )
+    } else {
+        journey.departure.time.getDepartText(now)
     }
 }
 
@@ -239,6 +211,7 @@ private fun Journey.isOnlyWalk(): Boolean =
 fun departTextStyling(journey: Journey, now: Long): TextStyle {
     val style = MTheme.type.highlightTextS.fontSize(20.sp)
     if (journey.isOnlyWalk()) return style
+    if (journey.departure.sameMinute(now)) return style.asPrimary()
     if (journey.isDeparted || journey.departure.isBefore(now)) return style.asAlert()
 
     return style

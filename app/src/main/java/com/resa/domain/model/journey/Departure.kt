@@ -13,4 +13,9 @@ data class Departure(
             is JourneyTimes.Planned -> time.time.before(Date(millis))
             is JourneyTimes.Changed -> time.estimated.before(Date(millis))
         }
+    fun sameMinute(millis: Long): Boolean =
+        when (time) {
+            is JourneyTimes.Planned -> (time.time.time - millis) in (-60000..0)
+            is JourneyTimes.Changed -> (time.estimated.time - millis) in (-60000..0)
+        }
 }

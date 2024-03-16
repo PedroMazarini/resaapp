@@ -1,15 +1,26 @@
 package com.resa.data.network.mappers
 
+import com.resa.data.network.model.travelplanner.journeys.response.ArrivalAccessLink
+import com.resa.data.network.model.travelplanner.journeys.response.ConnectionLink
+import com.resa.data.network.model.travelplanner.journeys.response.DepartureAccessLink
+import com.resa.data.network.model.travelplanner.journeys.response.DestinationLink
 import com.resa.data.network.model.travelplanner.journeys.response.Note
 import com.resa.data.network.model.travelplanner.journeys.response.Severity
+import com.resa.domain.model.Coordinate
 import com.resa.domain.model.TransportMode
+import com.resa.domain.model.journey.ArrivalLeg
 import com.resa.domain.model.journey.Departure
 import com.resa.domain.model.journey.JourneyTimes
+import com.resa.domain.model.journey.Warning
+import com.resa.domain.model.journey.WarningSeverity
 import com.resa.domain.model.journey.WarningTypes
 import com.resa.global.Mapper
 import com.resa.global.extensions.orFalse
+import com.resa.global.extensions.orThrow
 import com.resa.global.extensions.parseRfc3339
+import com.resa.global.extensions.safeLet
 import com.resa.global.loge
+import com.resa.ui.util.MappingException
 import java.util.Date
 import com.resa.data.network.model.travelplanner.journeys.response.Journey as RemoteJourney
 import com.resa.data.network.model.travelplanner.journeys.response.OccupancyLevel as DataOccupancyLevel
@@ -27,6 +38,7 @@ class RemoteToDomainJourneyMapper(
     override fun map(value: RemoteJourney): DomainJourney =
         DomainJourney(
             id = value.detailsReference.orEmpty(),
+            detailsId = value.detailsReference.orEmpty(),
             departure = value.getDeparture(),
             durationInMinutes = value.getDuration(),
             hasAccessibility = value.getAccessibility(),
@@ -76,13 +88,17 @@ class RemoteToDomainJourneyMapper(
             try {
                 if (leg.isDepartureAsPlanned()) {
                     JourneyTimes.Planned(
-                        time = leg.plannedDepartureTime?.parseRfc3339() ?: Date(),
+                        time = leg.plannedDepartureTime?.parseRfc3339() orThrow MappingException(leg),
                         isLiveTracking = false,
                     )
                 } else {
                     JourneyTimes.Changed(
-                        planned = leg.plannedDepartureTime?.parseRfc3339() ?: Date(),
-                        estimated = leg.estimatedDepartureTime?.parseRfc3339() ?: Date(),
+                        planned = leg.plannedDepartureTime?.parseRfc3339() orThrow MappingException(
+                            leg
+                        ),
+                        estimated = leg.estimatedDepartureTime?.parseRfc3339() orThrow MappingException(
+                            leg
+                        ),
                         isLiveTracking = true,
                     )
                 }
@@ -92,7 +108,9 @@ class RemoteToDomainJourneyMapper(
             }
         } ?: run {
             JourneyTimes.Planned(
-                time = destinationLink?.plannedDepartureTime?.parseRfc3339() ?: Date(),
+                time = destinationLink?.plannedDepartureTime?.parseRfc3339() orThrow MappingException(
+                    this
+                ),
                 isLiveTracking = false,
             )
         }
@@ -132,7 +150,7 @@ class RemoteToDomainJourneyMapper(
         } else {
             var hasMediumWarning = false
             warnings.forEach {
-                if (it.severity == Severity.low) return WarningTypes.HighWarning
+                if (it.severity == Severity.high) return WarningTypes.HighWarning
                 if (it.severity == Severity.normal) hasMediumWarning = true
             }
             if (hasMediumWarning) WarningTypes.MediumWarning else WarningTypes.LowWarning
@@ -148,19 +166,27 @@ class RemoteToDomainJourneyMapper(
             legs.add(legMapper.map(it))
         }
         val sortedLegs = legs.sortedBy { it.index }.toMutableList()
-        departureAccessLink?.let {
-            sortedLegs.add(0, departLinkMapper.map(it))
+        tripLegs?.last()?.let { arrivalLeg ->
+            sortedLegs.setArrivalTransportLegDetails(arrivalAccessLink, arrivalLeg)
         }
-        arrivalAccessLink?.let {
-            sortedLegs.add(sortedLegs.size, arrivalLinkMapper.map(it))
-        }
+        sortedLegs.addDepartureLink(departureAccessLink)
+        sortedLegs.addArrivalLink(arrivalAccessLink)
+
         if (sortedLegs.isEmpty()) {
             destinationLink?.let {
                 sortedLegs.add(
-                    DomainLeg.AccessLink(
+                    DomainLeg.ArrivalLink(
                         index = 0,
                         transportMode = TransportMode.walk,
                         durationInMinutes = it.estimatedDurationInMinutes ?: 2,
+                        departTime = it.getTime(),
+                        distanceInMeters = it.distanceInMeters ?: 0,
+                        name = it.origin?.name.orEmpty(),
+                        destinationName = it.destination?.name.orEmpty(),
+                        warnings = it.getWarnings(),
+                        arriveTime = it.getArrivalTime(),
+                        from = it.getOriginCoordinates(),
+                        to = it.getDestinationCoordinates(),
                     )
                 )
             }
@@ -168,8 +194,152 @@ class RemoteToDomainJourneyMapper(
         return sortedLegs
     }
 
+    private fun DestinationLink.getWarnings(): List<Warning> {
+        return notes?.map {
+            Warning(
+                message = it.text.orEmpty(),
+                severity = it.severity?.let { severity ->
+                    when (severity) {
+                        Severity.normal -> WarningSeverity.MEDIUM
+                        Severity.high -> WarningSeverity.HIGH
+                        else -> WarningSeverity.LOW
+                    }
+                } ?: WarningSeverity.LOW
+            )
+        }.orEmpty()
+    }
+
+    private fun DestinationLink.isArrivalAsPlanned(): Boolean =
+        (estimatedArrivalTime == null) || (plannedArrivalTime == estimatedArrivalTime)
+
+    private fun DestinationLink.getArrivalTime(): JourneyTimes {
+        return try {
+            if (isArrivalAsPlanned()) {
+                JourneyTimes.Planned(
+                    time = plannedArrivalTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = false,
+                )
+            } else {
+                JourneyTimes.Changed(
+                    planned = plannedArrivalTime?.parseRfc3339() orThrow MappingException(this),
+                    estimated = estimatedArrivalTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = true,
+                )
+            }
+        } catch (e: Exception) {
+            loge("$TAG failed to map Time: ${e.message}")
+            error(e)
+        }
+    }
+
+    private fun DestinationLink.isDepartureAsPlanned(): Boolean =
+        (estimatedDepartureTime == null) || (plannedDepartureTime == estimatedDepartureTime)
+
+    private fun DestinationLink.getTime(): JourneyTimes {
+        return try {
+            if (isDepartureAsPlanned()) {
+                JourneyTimes.Planned(
+                    time = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = false,
+                )
+            } else {
+                JourneyTimes.Changed(
+                    planned = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    estimated = estimatedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = true,
+                )
+            }
+        } catch (e: Exception) {
+            loge("$TAG failed to map Time: ${e.message}")
+            error(e)
+        }
+    }
+
+    private fun MutableList<DomainLeg>.setArrivalTransportLegDetails(
+        arrivalLink: ArrivalAccessLink?,
+        arrivalLeg: RemoteLeg,
+    ) {
+        arrivalLink?.let { this }
+        ?: run {
+            last().let {
+                if (it is DomainLeg.Transport) {
+                    set(
+                        lastIndex,
+                        it.copy(
+                            arrivalLeg = ArrivalLeg.Details(
+                                name = arrivalLeg.destination.stopPoint.name,
+                                arrivalTime = arrivalLeg.getTime(),
+                            )
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private fun RemoteLeg.getTime(): JourneyTimes {
+        return try {
+            if (isDepartureAsPlanned()) {
+                JourneyTimes.Planned(
+                    time = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = false,
+                )
+            } else {
+                JourneyTimes.Changed(
+                    planned = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    estimated = estimatedDepartureTime?.parseRfc3339() orThrow MappingException(this),
+                    isLiveTracking = true,
+                )
+            }
+        } catch (e: Exception) {
+            loge("$TAG failed to map Time: ${e.message}")
+            error(e)
+        }
+    }
+
     private fun RemoteLeg.isDepartureAsPlanned(): Boolean =
         plannedDepartureTime == estimatedOtherwisePlannedDepartureTime
+
+    private fun MutableList<DomainLeg>.checkForLastTransportLeg(
+        arrivalLink: ArrivalAccessLink?
+    ) {
+        arrivalLink?.let { this }
+            ?: run {
+            mapIndexed { index, leg ->
+                if (lastIndex == index) {
+                    (leg as? DomainLeg.Transport)?.let {
+                        leg.copy(
+                            arrivalLeg = ArrivalLeg.None,
+                        )
+                    } ?: run { leg }
+                } else leg
+            }.toMutableList()
+        }
+    }
+
+    private fun MutableList<DomainLeg>.addArrivalLink(
+        arrivalAccessLink: ArrivalAccessLink?
+    ) {
+        arrivalAccessLink?.let { add(arrivalLinkMapper.map(it)) }
+    }
+
+    private fun MutableList<DomainLeg>.addDepartureLink(
+        departureAccessLink: DepartureAccessLink?
+    ) {
+        departureAccessLink?.let { add(0, departLinkMapper.map(it)) }
+    }
+
+    private fun DestinationLink.getOriginCoordinates(): Coordinate? {
+        return safeLet(origin?.latitude, origin?.longitude) { lat, lon ->
+            Coordinate(lat = lat, lon = lon)
+        }
+    }
+
+    private fun DestinationLink.getDestinationCoordinates(): Coordinate? {
+        return safeLet(destination?.latitude, destination?.longitude) { lat, lon ->
+            Coordinate(lat = lat, lon = lon)
+        }
+    }
 
     private fun RemoteLeg.isArrivalAsPlanned(): Boolean =
         plannedArrivalTime == estimatedOtherwisePlannedArrivalTime

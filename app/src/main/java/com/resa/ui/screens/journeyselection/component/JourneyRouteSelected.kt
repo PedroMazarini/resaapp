@@ -114,7 +114,7 @@ fun JourneyRouteSelected(
                 },
                 modifier = Modifier
                     .padding(end = 24.dp)
-                    .padding(bottom = 8.dp, top = 24.dp)
+                    .padding(bottom = 8.dp)
                     .clip(CircleShape)
                     .background(MTheme.colors.btnBackground)
                     .size(38.dp)
