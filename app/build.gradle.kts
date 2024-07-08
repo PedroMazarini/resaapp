@@ -1,38 +1,58 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-@Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
     id("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
-val vasttrafikApiKey: String = gradleLocalProperties(rootDir).getProperty("VASTTRAFIK_API_KEY")
+val vasttrafikApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("VASTTRAFIK_API_KEY")
 
 android {
-    namespace = "com.resa"
+    namespace = "com.mazarini.resa"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.resa"
+        applicationId = "com.mazarini.resa"
         minSdk = 26
-        targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 34
+        versionCode = 102
+        versionName = "1.02"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
         buildConfigField("String", "VASTTRAFIK_API_KEY", vasttrafikApiKey)
+        signingConfig = signingConfigs.getByName("debug")
+
+        val locales = arrayOf("en", "sv", "pt", "peo", "tr")
+
+        // Convert the array to a format suitable for buildConfigField
+        val localesString = locales.joinToString(prefix = "{", postfix = "}", separator = ", ") { "\"$it\"" }
+
+        // Add the locale codes to buildConfigField
+        buildConfigField("String[]", "TRANSLATED_LOCALES", localesString)
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -99,11 +119,13 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.activity)
     implementation(libs.compose.navigation)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.compose.constraintlayout)
 
     /* DI */
     implementation(libs.hilt)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.graphics.shapes.android)
     kapt(libs.hilt.compiler)
 
     /* Storage - Room */
@@ -129,6 +151,11 @@ dependencies {
     /* Google Services */
     implementation(libs.google.location)
     implementation(libs.google.maps.compose)
+    implementation(libs.google.mlkit.translate)
+
+    /* Firebase */
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     /* Unit Test */
     testImplementation(libs.mockk)
@@ -149,6 +176,10 @@ dependencies {
     /* Debug */
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.leakcanary)
+//    debugImplementation(libs.flipper)
+//    debugImplementation(libs.soloader)
+//
+//    releaseImplementation(libs.flipper.noop)
 }
 
 kapt {

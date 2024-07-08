@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="22dp"
+    android:viewportWidth="18"
+    android:viewportHeight="22">
+    <path
+        android:pathData="M9,21.728L2.636,15.364C1.377,14.105 0.52,12.502 0.173,10.756C-0.174,9.01 0.004,7.2 0.685,5.556C1.366,3.911 2.52,2.506 4,1.517C5.48,0.528 7.22,0 9,0C10.78,0 12.52,0.528 14,1.517C15.48,2.506 16.634,3.911 17.315,5.556C17.996,7.2 18.174,9.01 17.827,10.756C17.48,12.502 16.623,14.105 15.364,15.364L9,21.728Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="1"/>
+    <!-- This circle is an attempt to create a "hole". Adjust cx, cy, and r according to your needs. Use the background color of your app. -->
+    <path
+        android:pathData="M9,9 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0"
+        android:fillColor="#B1B1B1"/> <!-- Adjust the fillColor to match your background -->
+</vector>

@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name">Resa</string>
+    <string name="resa_app">Resa App</string>
     <string name="where_to_question">Where to?</string>
     <string name="depart_at">Depart at</string>
     <string name="depart_now">Depart Now</string>
     <string name="arrive_by">Arrive by</string>
     <string name="arrive_at">Arrive at</string>
+    <string name="at_location">at</string>
+    <string name="at_time">at</string>
     <string name="now">Now</string>
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
@@ -15,6 +18,8 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="done">Done</string>
+    <string name="more_filters">more filters</string>
+    <string name="hide_filters">hide filters</string>
     <string name="go">GO</string>
     <string name="loading">Loading</string>
     <string name="origin">Origin</string>
@@ -22,8 +27,12 @@
     <string name="arrive_today">Arrive at %1$s</string>
     <string name="platform_name">Platform %1$s</string>
     <string name="platform">Platform</string>
+    <string name="follow">Follow</string>
+    <string name="following">Following</string>
     <string name="arrive_future">Arrive in %1$s at %2$s</string>
     <string name="departed_past">Departed at %1$s</string>
+    <string name="preferred_set">%1$s was set as default stop!</string>
+    <string name="preferred_deleted">%1$s was removed as default stop!</string>
     <string name="departed">departed</string>
     <string name="depart_today">Depart at %1$s</string>
     <string name="depart_in_m">Depart in %1$sm</string>
@@ -36,9 +45,22 @@
     <string name="recent">Recent</string>
     <string name="departures">Departures</string>
     <string name="travel_time">Travel time</string>
+    <string name="journey_time">Journey time</string>
+    <string name="transport_time">Transport time</string>
+    <string name="transport_mode">Transport mode</string>
     <string name="line">Line</string>
+    <string name="selected">Selected</string>
+    <string name="all">All</string>
+    <string name="translate">Translate</string>
+    <string name="see_original">See Original</string>
     <string name="depart_in">Depart in</string>
     <string name="next_in">Next in</string>
+    <string name="about">About</string>
+    <string name="theme">Theme</string>
+    <string name="choose_theme">Choose a theme</string>
+    <string name="select_language">Select the preferred language</string>
+    <string name="select_transport_modes">Select transport modes</string>
+    <string name="select_at_least_one_mode">Select at least one transport mode</string>
     <string name="hour_abbreviation">h</string>
     <string name="minute_abbreviation">m</string>
     <string name="min">min</string>
@@ -54,8 +76,110 @@
     <string name="add_your_trips">Add your favorite trips here!</string>
     <string name="allow_location_departures">Allow location access to see nearby departures!</string>
     <string name="allow_location_btn">Allow Location</string>
-    <string name="no_departures_found">Oh no! \nNo departures were found.</string>
     <string name="try_again">Try again</string>
     <string name="ride_n_stops">Ride %1$s stops (%2$s)</string>
     <string name="walk_min_distance">Walk %1$s min (%2$s m)</string>
+    <string name="no_journeys_found">Oh no! No trips were found for the selected journey.</string>
+    <string name="no_departures_found">Oh no! No departures were found for the selected stop.</string>
+    <string name="wifi_language_error">Turn on Wifi to download languages!</string>
+    <string name="translate_error">Unable to translate!</string>
+    <string name="google_maps_app_not_found">Google Maps app not found</string>
+    <string name="tracking_available">Live tracking available</string>
+    <string name="tracking_not_available">Live tracking not available</string>
+    <string name="live_tracking">Live Tracking</string>
+    <string name="see_on_map">See this journey on map</string>
+    <string name="loading_journey">Loading journey...</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="phone_default">Phone default</string>
+    <string name="default_">Default:</string>
+    <string name="confirm">Confirm</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="add_home">Add to Home</string>
+    <string name="tickets">Tickets</string>
+    <string name="open_playstore">Open in PlayStore</string>
+    <string name="open_app">Open App</string>
+    <string name="find_tickets">You can buy tickets directly in the Västtrafik ToGo app.</string>
+    <string name="search_stop">Search stop</string>
+    <string name="how_it_works">How it works</string>
+    <string name="bookmark_search">Bookmark your frequently used search for quick access in the Home screen.</string>
+    <string name="add_to_home_feat">Add this journey to Home screen to continue following it.</string>
+
+<!--    About screen -->
+    <string name="about_paragraph_1">Welcome to Resa, your companion for navigating the public transport system in Västra Götaland with ease and efficiency. Developed as a coding exercise, Resa is a testament to the application of the latest Android coding standards and practices. The goal is to provide a seamless and informative user experience for commuters and travelers in the Västra Götaland region by leveraging the comprehensive data provided by the Västtrafik API.</string>
+    <string name="about_paragraph_2">Here is a a glimpse of what was used to develop this app:</string>
+    <string name="about_compose">Jetpack Compose</string>
+    <string name="about_compose_desc">enabling modern, declarative UI development.</string>
+    <string name="about_mvvm">MVVM</string>
+    <string name="about_mvvm_desc">for a clean separation of app logic and UI.</string>
+    <string name="about_hilt">Hilt</string>
+    <string name="about_hilt_desc">for streamlined, consistent dependency injection throughout the app.</string>
+    <string name="about_room">Room</string>
+    <string name="about_room_desc">for efficient and robust local data storage and retrieval.</string>
+    <string name="about_lottie">Lottie Compose</string>
+    <string name="about_lottie_desc">for dynamic, vector-based animations within the UI.</string>
+    <string name="about_retrofit">Retrofit</string>
+    <string name="about_retrofit_desc">for effective network operations and data parsing from web services.</string>
+    <string name="about_leak_canary">Leak Canary</string>
+    <string name="about_leak_canary_desc">to monitor and report memory leaks, ensuring optimal app performance.</string>
+    <string name="about_datastore">DataStore</string>
+    <string name="about_datastore_desc">for a new, improved data storage solution, handling user preferences and settings.</string>
+    <string name="about_paging_compose">Paging Compose</string>
+    <string name="about_paging_compose_desc">for seamless, efficient loading and scrolling of large datasets.</string>
+    <string name="about_google_maps">Google Maps API</string>
+    <string name="about_google_maps_desc">for detailed, interactive mapping functionalities.</string>
+    <string name="disclaimer">Disclaimer</string>
+    <string name="disclaimer_desc">The Resa App is independently developed and has no official affiliation with Västtrafik or its services. It merely utilizes data made available through Västtrafik\'s public API and does not claim to represent or directly collaborate with Västtrafik in any manner.</string>
+    <string name="disclaimer_live_tracking">The vehicle live tracking is an estimated position data provided by Västtrafik.</string>
+    <string name="contact_title">Contact</string>
+    <string name="contact_message">We value your input! To report bugs, suggest features, or ask questions, please reach out to us at:</string>
+    <string name="contact_fail">Unable to open email app!</string>
+    <string name="language">Language</string>
+
+<!--    Onboarding -->
+    <string name="home_onboarding_title">Welcome to *Resa app*, here you can check:</string>
+    <string name="departures_table">*Departures* timetable</string>
+    <string name="saved_journeys">Your *saved* favorite journeys</string>
+    <string name="recent_journeys">Your *recently* searched journeys</string>
+
+    <string name="search_title">Search Stops</string>
+    <string name="search_where_togo">*Search* where you want to go</string>
+    <string name="search_gps">User your *GPS* location</string>
+    <string name="search_pin">*Pin* your most used locations</string>
+
+    <string name="departures_see_upcoming">See *upcoming trips* for a stop</string>
+    <string name="departures_pin">*Pin* a stop to load automatically</string>
+    <string name="departures_quick">Quick options to see *recent stops*</string>
+
+    <string name="filters_title">Journey Filters</string>
+    <string name="filters_date">Set when you would like to *depart* or *arrive*</string>
+    <string name="filters_modes">Select specific transport *modes*</string>
+
+    <string name="journey_title">Journey Search</string>
+    <string name="journey_save">*Save* your favorite journeys</string>
+    <string name="journey_occupancy">See *how crowded* is might be</string>
+    <string name="journey_time_info">See *expected depart* and duration times</string>
+    <string name="journey_summary">Journey *summary* for transports and connections</string>
+
+    <string name="details_title">Journey Details</string>
+    <string name="details_tracking">*Live tracking* of vehicles position</string>
+    <string name="details_time">Journey times</string>
+    <string name="details_direction">*Map link* with directions</string>
+    <string name="details_alerts">Journey *alerts* and *information*</string>
+
+<!--    Transport Modes -->
+    <string name="bus">bus</string>
+    <string name="tram">tram</string>
+    <string name="ferry">ferry</string>
+    <string name="train">train</string>
+    <string name="taxi">taxi</string>
+    <string name="walk">walk</string>
+    <string name="bike">bike</string>
+    <string name="car">car</string>
+    <string name="unknown">unknown</string>
+    <string name="none">none</string>
+    <string name="added_to_home">Journey added to Home screen</string>
+    <string name="following_this_journey">Following this journey</string>
+    <string name="translation_disclaimer">*some translations were done automatically and may not be accurate.</string>
+    <!--    // About screen-->
 </resources>
