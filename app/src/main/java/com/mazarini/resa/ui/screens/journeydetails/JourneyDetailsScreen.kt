@@ -48,13 +48,13 @@ fun JourneyDetailsScreen(
 ) {
     val selectedJourney by uiState.selectedJourney.collectAsState()
     val hasCheckedForLocationAccess by uiState.hasCheckedForLocationAccess
-    val isCurrentJourneyAddedHome by uiState.isCurrentJourneyAddedHome
+//    val isCurrentJourneyAddedHome by uiState.isCurrentJourneyAddedHome
     val shouldShowMap by uiState.shouldShowMap
     var shadowEffect by remember { mutableStateOf(0.dp) }
     val offSetPx = remember { mutableFloatStateOf(0f) }
-    val showAddButton by remember { derivedStateOf {
-        offSetPx.floatValue == 0f && !isCurrentJourneyAddedHome
-    }}
+//    val showAddButton by remember { derivedStateOf {
+//        offSetPx.floatValue == 0f && !isCurrentJourneyAddedHome
+//    }}
     val context = LocalContext.current
 
     selectedJourney?.let { journey ->
@@ -131,13 +131,13 @@ fun JourneyDetailsScreen(
                         },
                     )
                 }
-                AddToHomeButton(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 24.dp, bottom = 24.dp),
-                    onEvent = onEvent,
-                    visible = showAddButton,
-                )
+//                AddToHomeButton(
+//                    modifier = Modifier
+//                        .align(Alignment.BottomEnd)
+//                        .padding(end = 24.dp, bottom = 24.dp),
+//                    onEvent = onEvent,
+//                    visible = showAddButton,
+//                )
             }
         }
     } ?: run {
@@ -146,6 +146,10 @@ fun JourneyDetailsScreen(
 
     if (!hasCheckedForLocationAccess) {
         CheckLocationAccess(onEvent)
+    }
+
+    LaunchedEffect(Unit) {
+        onEvent(JourneyDetailsUiEvent.SaveJourneyToHome)
     }
 }
 

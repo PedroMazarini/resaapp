@@ -180,6 +180,7 @@
     <string name="unknown">okänd</string>
     <string name="none">ingen</string>
     <string name="added_to_home">Resa tillagd till hemskärmen</string>
-    <string name="following_this_journey">Följer denna resa</string>
+    <string name="last_viewed">Senast visad</string>
+    <string name="get_started">Kom igång</string>
     <!--    // About screen-->
 </resources>

@@ -180,6 +180,7 @@
     <string name="unknown">نامشخص</string>
     <string name="none">هیچ</string>
     <string name="added_to_home">سفر به صفحه اصلی اضافه شد</string>
-    <string name="following_this_journey">در حال دنبال کردن این سفر</string>
+    <string name="last_viewed">آخرین مشاهده‌شده</string>
+    <string name="get_started">شروع کنید</string>
     <!--    // About screen-->
 </resources>

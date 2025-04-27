@@ -186,7 +186,7 @@ fun PinHeader() {
         )
         Text(
             modifier = Modifier.padding(start = 4.dp),
-            text = stringResource(R.string.following_this_journey),
+            text = stringResource(R.string.last_viewed),
             style = MTheme.type.secondaryLightText,
         )
         LottieAnim(

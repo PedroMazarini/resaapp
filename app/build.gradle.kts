@@ -22,8 +22,8 @@ android {
         applicationId = "com.mazarini.resa"
         minSdk = 26
         targetSdk = 34
-        versionCode = 102
-        versionName = "1.02"
+        versionCode = 103
+        versionName = "1.03"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

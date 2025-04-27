@@ -17,9 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mazarini.resa.R
 import com.mazarini.resa.ui.navigation.Route
 import com.mazarini.resa.ui.screens.journeydetails.components.journeydetailedlegs.legdetails.PageIndicator
@@ -46,6 +48,13 @@ fun OnboardingScreen(
         modifier = Modifier.fillMaxSize(),
     ) {
         val pagerState = rememberPagerState { ONBOARDING_PAGES_COUNT }
+        val (buttonText, buttonTextStyle) = if (pagerState.currentPage == ONBOARDING_PAGES_COUNT - 1) {
+            stringResource(R.string.get_started) to
+            MTheme.type.textField.copy(color = MTheme.colors.primary, fontSize = 22.sp)
+        } else {
+            stringResource(R.string.dismiss) to
+            MTheme.type.textField
+        }
 
         PageIndicator(
             modifier = Modifier
@@ -119,8 +128,8 @@ fun OnboardingScreen(
         ) {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = stringResource(R.string.dismiss),
-                style = MTheme.type.textField,
+                text = buttonText,
+                style = buttonTextStyle,
             )
         }
     }
