@@ -1,5 +1,8 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.android.tools.build.jetifier.core.utils.Log
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -13,10 +16,19 @@ plugins {
 }
 println("##############################")
 println("rootDir: $rootDir")
+Log.e("rootDir", rootDir.toString())
 println("rootDir.absolutePath: ${rootDir.absolutePath}")
 println("##############################")
 
-val vasttrafikApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("VASTTRAFIK_API_KEY")
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+val vasttrafikApiKey: String = localProperties.getProperty("VASTTRAFIK_API_KEY") ?: "\"MISSING_API_KEY\""
+//val vasttrafikApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("VASTTRAFIK_API_KEY")
 
 android {
     namespace = "com.mazarini.resa"
