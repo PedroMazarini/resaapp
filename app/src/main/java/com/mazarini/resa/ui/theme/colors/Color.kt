@@ -15,6 +15,7 @@ val Black900_65 = Color(0xA6000C1A)
 val Black900_35 = Color(0x59000C1A)
 val Black900_20 = Color(0x33000C1A)
 val Black900_10 = Color(0x1A000C1A)
+
 val Black900_05 = Color(0x0D000C1A)
 
 val Black700 = Color(0xFF333A44)
