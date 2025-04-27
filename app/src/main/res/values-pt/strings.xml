@@ -181,6 +181,7 @@
     <string name="unknown">desconhecido</string>
     <string name="none">nenhum</string>
     <string name="added_to_home">Viagem adicionada à Tela Inicial</string>
-    <string name="following_this_journey">Seguindo esta viagem</string>
+    <string name="last_viewed">Ùltima visualizada</string>
+    <string name="get_started">Começar</string>
     <!--    // About screen-->
 </resources>

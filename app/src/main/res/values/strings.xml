@@ -179,7 +179,8 @@
     <string name="unknown">unknown</string>
     <string name="none">none</string>
     <string name="added_to_home">Journey added to Home screen</string>
-    <string name="following_this_journey">Following this journey</string>
+    <string name="last_viewed">Following this journey</string>
     <string name="translation_disclaimer">*some translations were done automatically and may not be accurate.</string>
+    <string name="get_started">Get Started</string>
     <!--    // About screen-->
 </resources>

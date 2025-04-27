@@ -1,5 +1,8 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.android.tools.build.jetifier.core.utils.Log
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -12,7 +15,13 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
-val vasttrafikApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("VASTTRAFIK_API_KEY")
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(FileInputStream(localPropertiesFile))
+    }
+}
+val vasttrafikApiKey: String = localProperties.getProperty("VASTTRAFIK_API_KEY") ?: "\"MISSING_API_KEY\""
 
 android {
     namespace = "com.mazarini.resa"
@@ -22,8 +31,8 @@ android {
         applicationId = "com.mazarini.resa"
         minSdk = 26
         targetSdk = 34
-        versionCode = 102
-        versionName = "1.02"
+        versionCode = 103
+        versionName = "1.03"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -43,8 +52,8 @@ android {
 
     buildTypes {
         debug {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -163,6 +172,7 @@ dependencies {
     testImplementation(libs.jupiter.params)
     testRuntimeOnly(libs.jupiter.engine)
     testImplementation(libs.coroutines.test)
+    testImplementation(libs.test.ext.junit)
 
     /* UI Test */
     androidTestImplementation(platform(libs.compose.bom))

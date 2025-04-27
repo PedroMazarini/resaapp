@@ -180,6 +180,7 @@
     <string name="unknown">bilinmeyen</string>
     <string name="none">hiçbiri</string>
     <string name="added_to_home">Yolculuk ana ekrana eklendi</string>
-    <string name="following_this_journey">Bu yolculuk takip ediliyor</string>
+    <string name="last_viewed">Son görüntülenen</string>
+    <string name="get_started">Başla</string>
     <!--    // About screen-->
 </resources>
