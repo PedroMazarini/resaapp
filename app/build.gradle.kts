@@ -14,12 +14,6 @@ plugins {
     id("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
-println("##############################")
-println("rootDir: $rootDir")
-Log.e("rootDir", rootDir.toString())
-println("rootDir.absolutePath: ${rootDir.absolutePath}")
-println("##############################")
-
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -28,7 +22,6 @@ val localProperties = Properties().apply {
     }
 }
 val vasttrafikApiKey: String = localProperties.getProperty("VASTTRAFIK_API_KEY") ?: "\"MISSING_API_KEY\""
-//val vasttrafikApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("VASTTRAFIK_API_KEY")
 
 android {
     namespace = "com.mazarini.resa"
@@ -179,6 +172,7 @@ dependencies {
     testImplementation(libs.jupiter.params)
     testRuntimeOnly(libs.jupiter.engine)
     testImplementation(libs.coroutines.test)
+    testImplementation(libs.test.ext.junit)
 
     /* UI Test */
     androidTestImplementation(platform(libs.compose.bom))
