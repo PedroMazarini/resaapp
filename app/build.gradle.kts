@@ -11,6 +11,10 @@ plugins {
     id("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
+println("##############################")
+println("rootDir: $rootDir")
+println("rootDir.absolutePath: ${rootDir.absolutePath}")
+println("##############################")
 
 val vasttrafikApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("VASTTRAFIK_API_KEY")
 
