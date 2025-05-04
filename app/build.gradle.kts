@@ -1,14 +1,11 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-import com.android.tools.build.jetifier.core.utils.Log
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.services)
     id("kotlin-kapt")
@@ -25,14 +22,14 @@ val vasttrafikApiKey: String = localProperties.getProperty("VASTTRAFIK_API_KEY")
 
 android {
     namespace = "com.mazarini.resa"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.mazarini.resa"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 103
-        versionName = "1.03"
+        targetSdk = 36
+        versionCode = 104
+        versionName = "1.04"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -83,7 +80,7 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.5.13"
     }
     packaging {
         resources {
@@ -186,10 +183,10 @@ dependencies {
     /* Debug */
     debugImplementation(libs.ui.test.manifest)
     debugImplementation(libs.leakcanary)
-//    debugImplementation(libs.flipper)
-//    debugImplementation(libs.soloader)
-//
-//    releaseImplementation(libs.flipper.noop)
+
+    /* Security */
+    implementation(libs.androidx.security)
+    testImplementation(kotlin("test"))
 }
 
 kapt {

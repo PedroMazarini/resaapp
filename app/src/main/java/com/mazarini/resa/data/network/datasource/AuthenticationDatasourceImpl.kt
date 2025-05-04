@@ -4,7 +4,7 @@ import com.mazarini.resa.data.network.datasource.abstraction.AuthenticationDatas
 import com.mazarini.resa.data.network.services.AuthenticationService
 import com.mazarini.resa.data.network.services.RetrofitService
 import com.mazarini.resa.domain.model.ApiToken
-import com.mazarini.resa.global.extensions.toIntOrZero
+import okhttp3.internal.toLongOrDefault
 import javax.inject.Inject
 
 class AuthenticationDatasourceImpl
@@ -18,7 +18,7 @@ constructor(
             .requestToken(clientId = deviceId)
         return ApiToken(
             token = tokenResponse.token,
-            expireInSec = tokenResponse.expireInSec.toIntOrZero,
+            expireMilli = tokenResponse.expireInSec.toLongOrDefault(0L),
         )
     }
 }
