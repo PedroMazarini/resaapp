@@ -51,7 +51,7 @@ class RemoteToDomainStopJourneyMapper {
                     ?: error("No border color"),
             )
         } catch (e: Exception) {
-            loge("${com.mazarini.resa.data.network.mappers.RemoteToDomainStopJourneyMapper.TAG} ${e.message.toString()}")
+            loge("$TAG ${e.message.toString()}")
             LegColors(
                 foreground = Color.White,
                 background = com.mazarini.resa.ui.theme.colors.FrenchBlue,
@@ -62,14 +62,14 @@ class RemoteToDomainStopJourneyMapper {
 
     private fun RemoteStopJourney.getStopJourneyTime(): JourneyTimes {
         return when (estimatedTime) {
-            estimatedOtherwisePlannedTime -> com.mazarini.resa.domain.model.journey.JourneyTimes.Changed(
+            estimatedOtherwisePlannedTime -> JourneyTimes.Changed(
                 estimated = estimatedTime?.parseRfc3339()
                     ?: error("Journey time could not be parsed"),
                 planned = plannedTime.parseRfc3339() ?: error("Estimated journey time could not be parsed ($estimatedTime)"),
                 isLiveTracking = true,
             )
 
-            else -> com.mazarini.resa.domain.model.journey.JourneyTimes.Planned(
+            else -> JourneyTimes.Planned(
                 time = plannedTime.parseRfc3339() ?: error("Planned journey time could not be parsed ($plannedTime)"),
                 isLiveTracking = false,
             )

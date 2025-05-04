@@ -25,8 +25,8 @@ class QueryJourneysParamsMapper : Mapper<QueryJourneysParams, Map<String, String
         value.onlyDirectConnections?.let { map["onlyDirectConnections"] = it.toString() }
         value.includeNearbyStopAreas?.let { map["includeNearbyStopAreas"] = it.toString() }
         value.viaGid?.let { map["viaGid"] = it }
-        value.originWalk?.let { map["originWalk"] = "1,,"} // it.enabled.toString() }
-        value.destWalk?.let { map["destWalk"] = "1,,"} //it.enabled.toString() }
+        value.originWalk?.let { map["originWalk"] = "1,,"}
+        value.destWalk?.let { map["destWalk"] = "1,,"}
         value.originBike?.let { map["originBike"] = it.enabled.toString() }
         value.destBike?.let { map["destBike"] = it.enabled.toString() }
         value.totalBike?.let { map["totalBike"] = it.enabled.toString() }

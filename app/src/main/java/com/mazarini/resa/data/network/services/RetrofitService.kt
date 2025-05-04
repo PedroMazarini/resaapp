@@ -33,6 +33,5 @@ object RetrofitService {
     }
 
     const val BASE_URL_AUTH = "https://ext-api.vasttrafik.se/"
-    const val BASE_URL_GEO = "https://ext-api.vasttrafik.se/geo/v2/"
     const val BASE_URL_TRAVEL_PLANNER = "https://ext-api.vasttrafik.se/pr/v4/"
 }

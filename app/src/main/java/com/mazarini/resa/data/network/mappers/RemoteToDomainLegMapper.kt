@@ -76,19 +76,19 @@ class RemoteToDomainLegMapper : Mapper<RemoteLeg, DomainLeg> {
     private fun RemoteLeg.getTime(): JourneyTimes {
         return try {
             if (isDepartureAsPlanned()) {
-                com.mazarini.resa.domain.model.journey.JourneyTimes.Planned(
+                JourneyTimes.Planned(
                     time = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
                     isLiveTracking = false,
                 )
             } else {
-                com.mazarini.resa.domain.model.journey.JourneyTimes.Changed(
+                JourneyTimes.Changed(
                     planned = plannedDepartureTime?.parseRfc3339() orThrow MappingException(this),
                     estimated = estimatedDepartureTime?.parseRfc3339() orThrow MappingException(this),
                     isLiveTracking = true,
                 )
             }
         } catch (e: Exception) {
-            loge("${com.mazarini.resa.data.network.mappers.RemoteToDomainLegMapper.TAG} failed to map Time: ${e.message}")
+            loge("$TAG failed to map Time: ${e.message}")
             error(e)
         }
     }
@@ -112,7 +112,7 @@ class RemoteToDomainLegMapper : Mapper<RemoteLeg, DomainLeg> {
                 border = serviceJourney.line.borderColor?.asColor() ?: error("No border color"),
             )
         } catch (e: Exception) {
-            loge("${com.mazarini.resa.data.network.mappers.RemoteToDomainLegMapper.TAG} failed to map Leg Colors using default: ${e.message}")
+            loge("$TAG failed to map Leg Colors using default: ${e.message}")
             DomainLegColors(
                 foreground = Color.White,
                 background = FrenchBlue,

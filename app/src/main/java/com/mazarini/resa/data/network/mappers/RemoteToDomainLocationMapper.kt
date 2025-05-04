@@ -15,11 +15,8 @@ class RemoteToDomainLocationMapper : Mapper<RemoteLocation, DomainLocation> {
             type = LocationType fromString value.locationType.name,
         )
 
-    private fun RemoteLocation.getId(): String {
-        gid?.let {
-            return it
-        } ?: run {
-            return "${latitude}${longitude}"
+    private fun RemoteLocation.getId(): String =
+        gid ?: run {
+            "${latitude}${longitude}"
         }
-    }
 }

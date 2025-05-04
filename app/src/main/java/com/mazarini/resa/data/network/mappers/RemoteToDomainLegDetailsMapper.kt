@@ -35,9 +35,9 @@ class RemoteToDomainLegDetailsMapper : Mapper<RemoteLegDetails, List<DomainLegDe
                 details.add(mapTransportLegDetails(remoteLegDetails, isLastLeg))
             }
         }
-        value.connectionLinks?.let {
-            it.forEach {
-                details.add(mapConnectionLegDetails(it))
+        value.connectionLinks?.let { it ->
+            it.forEach { link ->
+                details.add(mapConnectionLegDetails(link))
             }
         }
         value.arrivalAccessLink?.let {
