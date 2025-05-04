@@ -15,15 +15,9 @@ import com.mazarini.resa.data.network.model.travelplanner.location.Location as R
 class LocationsPagingSource(
     private val token: String,
     private val locationsParams: QueryLocationsParams.ByText,
+    private val locationsService: LocationsService,
+    private val mapper: QueryLocationsParamsMapper,
 ) : PagingSource<Int, RemoteLocation>() {
-
-    // TODO: Inject this field
-    private val locationsService = RetrofitService.getInstance(
-        LocationsService::class.java,
-        baseUrl = BASE_URL_TRAVEL_PLANNER,
-    )
-    // TODO: Inject this field
-    private val mapper = QueryLocationsParamsMapper()
 
     override fun getRefreshKey(state: PagingState<Int, RemoteLocation>): Int? {
         return state.anchorPosition?.let { anchorPosition ->

@@ -4,27 +4,20 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.mazarini.resa.data.network.mappers.QueryJourneysParamsMapper
 import com.mazarini.resa.data.network.model.travelplanner.journeys.GetJourneysResponse
-import com.mazarini.resa.data.network.model.travelplanner.journeys.response.Journey as RemoteJourney
 import com.mazarini.resa.data.network.services.travelplanner.JourneysService
-import com.mazarini.resa.data.network.services.RetrofitService
 import com.mazarini.resa.data.network.services.travelplanner.JourneysService.Companion.PAGE_SIZE
 import com.mazarini.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.mazarini.resa.domain.model.queryjourneys.transportModesNames
 import com.mazarini.resa.domain.model.queryjourneys.transportSubModesNames
 import com.mazarini.resa.global.analytics.loge
+import com.mazarini.resa.data.network.model.travelplanner.journeys.response.Journey as RemoteJourney
 
 class JourneysPagingSource(
     private val token: String,
     private val journeysParams: QueryJourneysParams,
+    private val journeysService: JourneysService,
+    private val mapper: QueryJourneysParamsMapper,
 ) : PagingSource<Int, RemoteJourney>() {
-
-    // TODO: Inject this field
-    private val journeysService = RetrofitService.getInstance(
-        JourneysService::class.java,
-        baseUrl = RetrofitService.BASE_URL_TRAVEL_PLANNER,
-    )
-    // TODO: Inject this field
-    private val mapper = QueryJourneysParamsMapper()
 
     private val pageUrlReferences = mutableMapOf<Int, String>()
 

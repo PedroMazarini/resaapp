@@ -22,7 +22,7 @@ class CacheModule {
 
     @Singleton
     @Provides
-    fun provide(@ApplicationContext context: Context) =
+    fun provide(@ApplicationContext context: Context): ResaDatabase =
         Room.databaseBuilder(
             context, ResaDatabase::class.java, DATABASE_NAME
         )

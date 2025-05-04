@@ -6,27 +6,19 @@ import com.mazarini.resa.data.network.mappers.QueryJourneysParamsMapper
 import com.mazarini.resa.data.network.model.travelplanner.journeys.GetJourneysResponse
 import com.mazarini.resa.data.network.model.travelplanner.journeys.response.Journey
 import com.mazarini.resa.data.network.services.travelplanner.JourneysService
-import com.mazarini.resa.data.network.services.RetrofitService
 import com.mazarini.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.mazarini.resa.domain.model.queryjourneys.transportModesNames
 import com.mazarini.resa.domain.model.queryjourneys.transportSubModesNames
-import com.mazarini.resa.global.extensions.parseRfc3339
 import com.mazarini.resa.global.analytics.loge
+import com.mazarini.resa.global.extensions.parseRfc3339
 import com.mazarini.resa.data.network.model.travelplanner.journeys.response.Journey as RemoteJourney
 
 class PassedJourneysPagingSource(
     private val token: String,
     private val journeysParams: QueryJourneysParams,
+    private val journeysService: JourneysService,
+    private val mapper: QueryJourneysParamsMapper,
 ) : PagingSource<Int, RemoteJourney>() {
-
-    // TODO: Inject this field
-    private val journeysService = RetrofitService.getInstance(
-        JourneysService::class.java,
-        baseUrl = RetrofitService.BASE_URL_TRAVEL_PLANNER,
-    )
-
-    // TODO: Inject this field
-    private val mapper = QueryJourneysParamsMapper()
 
     private val passedUrlReferences = mutableMapOf<Int, String>()
 
@@ -80,7 +72,10 @@ class PassedJourneysPagingSource(
     }
 
     private suspend fun loadInitialPage(token: String, page: Int): GetJourneysResponse {
-        loge("loadInitialPage", mapOf("LocationsPagingSource" to "INITIAL reference: ${passedUrlReferences[page]}"))
+        loge(
+            "loadInitialPage",
+            mapOf("LocationsPagingSource" to "INITIAL reference: ${passedUrlReferences[page]}")
+        )
         return journeysService.queryJourneys(
             auth = "Bearer $token",
             queryMap = mapper.map(journeysParams),
@@ -90,7 +85,10 @@ class PassedJourneysPagingSource(
     }
 
     private suspend fun loadFromCachedUrl(token: String, page: Int): GetJourneysResponse {
-        loge("loadFromCachedUrl", mapOf("LocationsPagingSource" to "CACHED URL reference: ${passedUrlReferences[page]}"))
+        loge(
+            "loadFromCachedUrl",
+            mapOf("LocationsPagingSource" to "CACHED URL reference: ${passedUrlReferences[page]}")
+        )
         return journeysService.queryJourneysByUrl(
             auth = "Bearer $token",
             params = passedUrlReferences[page].orEmpty(),

@@ -1,6 +1,5 @@
 package com.mazarini.resa.data.network.datasource
 
-import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -8,6 +7,7 @@ import androidx.paging.map
 import com.mazarini.resa.data.network.datasource.abstraction.JourneysDatasource
 import com.mazarini.resa.data.network.datasource.paging.JourneysPagingSource
 import com.mazarini.resa.data.network.datasource.paging.PassedJourneysPagingSource
+import com.mazarini.resa.data.network.mappers.QueryJourneysParamsMapper
 import com.mazarini.resa.data.network.mappers.RemoteToDomainJourneyMapper
 import com.mazarini.resa.data.network.mappers.RemoteToDomainLegDetailsMapper
 import com.mazarini.resa.data.network.mappers.RemoteToDomainVehicleMapper
@@ -28,6 +28,7 @@ constructor(
     private val remoteToDomainLegDetailsMapper: RemoteToDomainLegDetailsMapper,
     private val remoteToDomainVehicleMapper: RemoteToDomainVehicleMapper,
     private val journeysService: JourneysService,
+    private val mapper: QueryJourneysParamsMapper,
 ) : JourneysDatasource {
 
     override suspend fun queryJourneys(
@@ -41,6 +42,8 @@ constructor(
                 JourneysPagingSource(
                     token = token,
                     journeysParams = journeysParams,
+                    journeysService = journeysService,
+                    mapper = mapper,
                 )
             }
         ).flow.map { pagingData ->
@@ -61,6 +64,8 @@ constructor(
                 PassedJourneysPagingSource(
                     token = token,
                     journeysParams = journeysParams,
+                    journeysService = journeysService,
+                    mapper = mapper,
                 )
             }
         ).flow.map { pagingData ->
