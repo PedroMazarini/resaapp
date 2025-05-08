@@ -8,16 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-//import com.google.firebase.Firebase
-//import com.google.firebase.analytics.FirebaseAnalytics
-//import com.google.firebase.analytics.analytics
-import com.mazarini.resa.domain.usecases.location.QueryLocationByTextUseCase
 import com.mazarini.resa.domain.usecases.RefreshTokenUseCase
+import com.mazarini.resa.domain.usecases.location.QueryLocationByTextUseCase
 import com.mazarini.resa.global.model.ThemeSettings
 import com.mazarini.resa.global.preferences.PrefsProvider
 import com.mazarini.resa.global.preferences.model.UserPreferences
@@ -32,10 +26,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject lateinit var refreshTokenUseCase: RefreshTokenUseCase
-    @Inject lateinit var queryLocationByTextUseCase: QueryLocationByTextUseCase
-
-//    private lateinit var firebaseAnalytics: FirebaseAnalytics
+    @Inject
+    lateinit var refreshTokenUseCase: RefreshTokenUseCase
+    @Inject
+    lateinit var queryLocationByTextUseCase: QueryLocationByTextUseCase
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -54,16 +48,14 @@ class MainActivity : ComponentActivity() {
                 )
 
                 NavigationHost()
-                userPreferences.value?.let {
-                    updateLanguage(it)
-                }
+                updateLanguage(userPreferences.value)
             }
         }
     }
 
     private fun updateLanguage(userPreference: UserPreferences) {
         val current = this.resources.configuration.locales.get(0).language
-        userPreference.language.takeIf { it != current}?.let {
+        userPreference.language.takeIf { it != current }?.let {
             restartApp()
         }
     }
@@ -94,21 +86,5 @@ class MainActivity : ComponentActivity() {
             ThemeSettings.DARK -> true
             ThemeSettings.LIGHT -> false
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ResaTheme {
-        Greeting("Android")
     }
 }

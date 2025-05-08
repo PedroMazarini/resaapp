@@ -10,9 +10,10 @@ import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableLongState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -24,10 +25,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.createBitmap
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.mazarini.resa.R
 import com.mazarini.resa.domain.model.journey.JourneyTimes
+import com.mazarini.resa.global.analytics.logd
 import com.mazarini.resa.global.extensions.date_MMM_dd
 import com.mazarini.resa.global.extensions.isAfter1h
 import com.mazarini.resa.global.extensions.isAfter24h
@@ -58,13 +64,9 @@ private fun drawableToBitmap(drawable: Drawable): Bitmap {
 
     val bitmap = if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
         // Single color bitmap will be created of 1x1 pixel
-        Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        createBitmap(1, 1)
     } else {
-        Bitmap.createBitmap(
-            drawable.intrinsicWidth,
-            drawable.intrinsicHeight,
-            Bitmap.Config.ARGB_8888
-        )
+        createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
     }
 
     val canvas = Canvas(bitmap)
@@ -76,23 +78,6 @@ private fun drawableToBitmap(drawable: Drawable): Bitmap {
 @Composable
 fun Float.pxToDp(): Dp =
     (this / (LocalContext.current.resources.displayMetrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT)).dp
-
-fun JourneyTimes.diffFromNow(): Long =
-    when (this) {
-        is JourneyTimes.Planned -> {
-            time.time - System.currentTimeMillis()
-        }
-
-        is JourneyTimes.Changed -> {
-            estimated.time - System.currentTimeMillis()
-        }
-    }
-
-fun JourneyTimes.formatTime(): String =
-    when (this) {
-        is JourneyTimes.Planned -> time.time_HH_mm()
-        is JourneyTimes.Changed -> estimated.time_HH_mm()
-    }
 
 @Composable
 fun departMilliAsText(departInMilli: Long): String {
@@ -133,12 +118,16 @@ enum class TimeUpdateInterval(val millis: Long) {
 @Composable
 fun getTimeUpdate(
     interval: TimeUpdateInterval,
-): MutableLongState {
-    val timeMillis = remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(key1 = timeMillis) {
-        while (true) {
-            delay(interval.millis)
-            timeMillis.longValue = System.currentTimeMillis()
+): Long {
+    var timeMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(interval) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                delay(interval.millis)
+                timeMillis = System.currentTimeMillis()
+                logd("TimeUpdate","Time update: ${interval.name}, current time: $timeMillis")
+            }
         }
     }
     return timeMillis
