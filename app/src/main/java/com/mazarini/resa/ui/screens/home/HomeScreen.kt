@@ -45,12 +45,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.mazarini.resa.BuildConfig
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mazarini.resa.R
 import com.mazarini.resa.global.fake.FakeFactory
-import com.mazarini.resa.global.preferences.PrefsProvider
-import com.mazarini.resa.ui.commoncomponents.SavedJourneyAdd
-import com.mazarini.resa.ui.commoncomponents.SavedJourneyItem
 import com.mazarini.resa.ui.commoncomponents.permissions.Common
 import com.mazarini.resa.ui.commoncomponents.permissions.location.LocationAction
 import com.mazarini.resa.ui.commoncomponents.permissions.location.RequestLocation
@@ -58,6 +55,8 @@ import com.mazarini.resa.ui.navigation.Route
 import com.mazarini.resa.ui.screens.home.components.NavigationDrawer
 import com.mazarini.resa.ui.screens.home.components.RecentJourneySearchItem
 import com.mazarini.resa.ui.screens.home.components.SavedHomeJourneyCard
+import com.mazarini.resa.ui.screens.home.components.SavedJourneyAdd
+import com.mazarini.resa.ui.screens.home.components.SavedJourneyItem
 import com.mazarini.resa.ui.screens.home.components.bars.HomeSearchBar
 import com.mazarini.resa.ui.screens.home.model.SavedJourneyState
 import com.mazarini.resa.ui.screens.home.state.HomeUiEvent
@@ -69,19 +68,21 @@ import com.mazarini.resa.ui.util.Previews
 import com.mazarini.resa.ui.util.fontSize
 import com.mazarini.resa.ui.util.onHeightChanged
 import com.mazarini.resa.ui.util.pxToDp
-import kotlinx.coroutines.launch
-import java.util.Locale
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun HomeScreen(
-    uiState: HomeUiState,
+    homeUiState: StateFlow<HomeUiState>,
     onEvent: (HomeUiEvent) -> Unit = {},
     navigateTo: (route: Route) -> Unit = {},
 ) {
 
-    val prefsProvider = PrefsProvider(LocalContext.current)
-    val coroutineScope = rememberCoroutineScope()
-    val navigateToJourneySelection by uiState.navigateToJourneySelection
+    val uiState by homeUiState.collectAsStateWithLifecycle()
+    val showOnboarding by remember { derivedStateOf { uiState.showOnboarding } }
+    val wasOnboardingSeen by remember { mutableStateOf(false) }
+    val navigateToSelection by remember { derivedStateOf { uiState.navigateToJourneySelection } }
+    var navigateRequested by remember { mutableStateOf(false) }
     var headerHeightPx by remember {
         mutableFloatStateOf(0f)
     }
@@ -101,7 +102,6 @@ fun HomeScreen(
         connection.shouldScroll.value = it.value
     }
 
-
     Box(
         modifier = Modifier
             .background(MTheme.colors.background)
@@ -111,7 +111,8 @@ fun HomeScreen(
         NavigationDrawer(
             modifier = Modifier,
             yOffsetDp = connection.headerOffset.pxToDp(),
-            uiState = uiState,
+            currentLanguage = uiState.currentLanguage,
+            currentTheme = uiState.currentTheme,
             onEvent = onEvent,
             navigateTo = navigateTo,
         ) {
@@ -158,18 +159,20 @@ fun HomeScreen(
         }
     }
 
-    if (navigateToJourneySelection) {
-        navigateTo(Route.JourneySelection)
-        onEvent(HomeUiEvent.NavigationRequested)
-    }
-
     LaunchedEffect(Unit) {
         onEvent(HomeUiEvent.CheckSavedJourneyToHome)
-        coroutineScope.launch {
-            if (!prefsProvider.hasSeenOnboarding()) {
-                prefsProvider.setSeenOnboarding()
-                navigateTo(Route.Onboarding)
-            }
+    }
+    LaunchedEffect(navigateToSelection) {
+        if (navigateToSelection && !navigateRequested) {
+            onEvent(HomeUiEvent.NavigationRequested)
+            navigateTo(Route.JourneySelection)
+        }
+        navigateRequested = navigateToSelection
+    }
+    LaunchedEffect(showOnboarding) {
+        if (showOnboarding && !wasOnboardingSeen) {
+            onEvent(HomeUiEvent.OnboardShown)
+            navigateTo(Route.Onboarding)
         }
     }
 }
@@ -182,11 +185,11 @@ fun SavedJourneys(
     contentPadding: Dp,
     scrollState: LazyListState,
 ) {
-    val savedJourneyState by uiState.savedJourneyState
-    val requestGpsLocation by uiState.requestGpsLocation
-    val hasCheckedPermission by uiState.hasCheckedPermission
-    val recentJourneysState by uiState.recentJourneysState
-    val pinnedHomeJourney by uiState.pinnedHomeJourney
+    val savedJourneyState = uiState.savedJourneyState
+    val requestGpsLocation = uiState.requestGpsLocation
+    val hasCheckedPermission = uiState.hasCheckedPermission
+    val recentJourneysState = uiState.recentJourneysState
+    val pinnedHomeJourney = uiState.pinnedHomeJourney
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val itemWidth = screenWidth * 0.55f
 
@@ -325,16 +328,10 @@ fun RequestLocationPermission(onEvent: (HomeUiEvent) -> Unit) {
 fun HomeDefaultPreview() {
     ResaTheme {
         HomeScreen(
-            uiState = HomeUiState(
-                savedJourneyState = mutableStateOf(
-                    SavedJourneyState.Loaded(
-                        FakeFactory.journeySearchList()
-                    )
-                ),
-                recentJourneysState = mutableStateOf(
-                    SavedJourneyState.Loaded(
-                        FakeFactory.journeySearchList()
-                    )
+            homeUiState = MutableStateFlow(
+                HomeUiState(
+                    savedJourneyState = SavedJourneyState.Loaded(FakeFactory.journeySearchList()),
+                    recentJourneysState = SavedJourneyState.Loaded(FakeFactory.journeySearchList())
                 )
             ),
         )

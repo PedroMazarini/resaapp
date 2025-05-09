@@ -1,24 +1,28 @@
 package com.mazarini.resa.ui.screens.home.components
 
 import androidx.compose.runtime.Composable
+import com.mazarini.resa.global.model.ThemeSettings
 import com.mazarini.resa.ui.commoncomponents.dialogs.ContactDialog
-import com.mazarini.resa.ui.commoncomponents.dialogs.LanguageDialog
 import com.mazarini.resa.ui.commoncomponents.dialogs.ThemeDialog
 import com.mazarini.resa.ui.commoncomponents.dialogs.TicketsDialog
 import com.mazarini.resa.ui.screens.home.state.HomeUiEvent
-import com.mazarini.resa.ui.screens.home.state.HomeUiState
 
 @Composable
 fun NavigationDrawerAction(
     actionType: NavigationActionType,
-    uiState: HomeUiState,
+    currentLanguage: String,
+    currentTheme: ThemeSettings,
     onEvent: (HomeUiEvent) -> Unit,
     clearAction: () -> Unit,
 ) {
 
     when (actionType) {
         NavigationActionType.THEME -> {
-            ThemeDialog { clearAction() }
+            ThemeDialog (
+                currentTheme = currentTheme,
+                onResult = { theme -> onEvent(HomeUiEvent.OnThemeChanged(theme)) },
+                onDismiss = { clearAction() }
+            )
         }
         NavigationActionType.TICKETS -> {
             TicketsDialog {
@@ -31,7 +35,7 @@ fun NavigationDrawerAction(
             }
         }
         NavigationActionType.LANGUAGE -> {
-            LanguageDialog {
+            LanguageDialog(currentLanguage = currentLanguage, onEvent = onEvent) {
                 clearAction()
             }
         }

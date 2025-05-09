@@ -22,6 +22,6 @@ internal class CollapsingAppBarNestedScrollConnection(
        val previousOffset = headerOffset
        if (shouldScroll.value) headerOffset = newOffset.coerceIn(-headerMaxHeight, 0f)
        val consumed = headerOffset - previousOffset
-       return Offset(0f, consumed.toFloat())
+       return Offset(0f, consumed)
    }
 }

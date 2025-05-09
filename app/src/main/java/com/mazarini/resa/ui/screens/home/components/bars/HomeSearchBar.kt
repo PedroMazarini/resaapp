@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ fun HomeSearchBar(
                 .padding(start = 24.dp)
                 .weight(1f)
                 .fillMaxWidth()
+                .testTag("HomeSearchBar")
                 .clickable { onSearchBarClicked() },
             shape = RoundedCornerShape(
                 topStart = 4.dp,
@@ -85,6 +87,7 @@ fun HomeSearchBar(
         Card(
             modifier = Modifier
                 .padding(start = 4.dp, end = 24.dp)
+                .testTag("HomeTimeTable")
                 .clickable { onTimeTableClicked() }
                 .fillMaxHeight(),
             shape = RoundedCornerShape(

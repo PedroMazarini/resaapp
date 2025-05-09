@@ -40,9 +40,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mazarini.resa.R
+import com.mazarini.resa.global.model.ThemeSettings
 import com.mazarini.resa.ui.navigation.Route
 import com.mazarini.resa.ui.screens.home.state.HomeUiEvent
-import com.mazarini.resa.ui.screens.home.state.HomeUiState
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import kotlinx.coroutines.launch
@@ -51,7 +51,8 @@ import kotlinx.coroutines.launch
 fun BoxScope.NavigationDrawer(
     modifier: Modifier,
     yOffsetDp: Dp,
-    uiState: HomeUiState,
+    currentLanguage: String,
+    currentTheme: ThemeSettings,
     onEvent: (HomeUiEvent) -> Unit,
     navigateTo: (route: Route) -> Unit = {},
     content: @Composable () -> Unit,
@@ -61,7 +62,8 @@ fun BoxScope.NavigationDrawer(
     val coroutineScope = rememberCoroutineScope()
     val currentDirection = LocalLayoutDirection.current
     val context = LocalContext.current
-    val version = context.packageManager.getPackageInfo("com.mazarini.resa", 0).versionName.orEmpty()
+    val version =
+        context.packageManager.getPackageInfo("com.mazarini.resa", 0).versionName.orEmpty()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         ModalNavigationDrawer(
@@ -162,9 +164,12 @@ fun BoxScope.NavigationDrawer(
 
     NavigationDrawerAction(
         actionType = action.value,
-        uiState = uiState,
+        currentLanguage = currentLanguage,
+        currentTheme = currentTheme,
         onEvent = onEvent,
-    ) { action.value = NavigationActionType.NONE }
+    ) {
+        action.value = NavigationActionType.NONE
+    }
 
     BackHandler(enabled = drawerState.isOpen) {
         coroutineScope.launch {
@@ -214,7 +219,8 @@ fun NavigationDrawerPreview() {
             NavigationDrawer(
                 modifier = Modifier,
                 yOffsetDp = 0.dp,
-                uiState = HomeUiState(),
+                currentLanguage = "en",
+                currentTheme = ThemeSettings.SYSTEM,
                 onEvent = {},
                 content = {},
             )

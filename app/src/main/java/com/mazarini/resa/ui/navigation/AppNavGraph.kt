@@ -25,7 +25,7 @@ fun NavGraphBuilder.addAppNavGraph(
     composable<Route.Home> {
         val viewModel = hiltViewModel<HomeViewModel>()
         HomeScreen(
-            uiState = viewModel.uiState,
+            homeUiState = viewModel.uiState,
             onEvent = viewModel::onEvent,
             navigateTo = navigateTo,
         )
@@ -34,7 +34,7 @@ fun NavGraphBuilder.addAppNavGraph(
         val viewModel = hiltViewModel<LocationSearchViewModel>()
         viewModel.verifyQueryFilters()
         LocationSearchScreen(
-            uiState = viewModel.uiState,
+            locationSearchUiState = viewModel.uiState,
             onEvent = viewModel::onEvent,
             navigateTo = navigateTo,
             upPress = upPress,
@@ -43,7 +43,7 @@ fun NavGraphBuilder.addAppNavGraph(
     composable<Route.JourneySelection> {
         val viewModel = hiltViewModel<JourneySelectionViewModel>()
         JourneySelectionScreen(
-            uiState = viewModel.uiState,
+            journeySelectionUiState = viewModel.uiState,
             onEvent = viewModel::onEvent,
             navigateTo = navigateTo,
             upPress = upPress,
@@ -53,7 +53,7 @@ fun NavGraphBuilder.addAppNavGraph(
         val viewModel = hiltViewModel<JourneyDetailsViewModel>()
 
         JourneyDetailsScreen(
-            uiState = viewModel.uiState,
+            journeyDetailsUiState = viewModel.uiState,
             onEvent = {event ->
                 if (event is JourneyDetailsUiEvent.OnBackPressed) {
                     upPress()
@@ -67,7 +67,7 @@ fun NavGraphBuilder.addAppNavGraph(
         val viewModel = hiltViewModel<DeparturesViewModel>()
 
         DeparturesScreen(
-            uiState = viewModel.uiState,
+            departuresUiState = viewModel.uiState,
             onEvent = viewModel::onEvent,
             navigateTo = navigateTo,
         )
@@ -80,7 +80,6 @@ fun NavGraphBuilder.addAppNavGraph(
     }
     composable<Route.Onboarding> {
         OnboardingScreen(
-            modifier = Modifier,
             navigateTo = navigateTo,
         )
     }

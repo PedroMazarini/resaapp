@@ -13,20 +13,20 @@ import com.mazarini.resa.domain.usecases.journey.GetRecentJourneySearchesUseCase
 import com.mazarini.resa.domain.usecases.journey.GetSavedJourneySearchesUseCase
 import com.mazarini.resa.domain.usecases.journey.LoadSavedJourneyToHomeUseCase
 import com.mazarini.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
-import com.mazarini.resa.domain.usecases.stoparea.GetStopsByCoordinateUseCase
-import com.mazarini.resa.global.extensions.isAfter1h
-import com.mazarini.resa.global.extensions.minusDays
 import com.mazarini.resa.global.extensions.minusMinutes
-import com.mazarini.resa.global.extensions.minutesFrom
 import com.mazarini.resa.global.extensions.rfc3339
+import com.mazarini.resa.global.model.ThemeSettings
 import com.mazarini.resa.global.preferences.PrefsProvider
 import com.mazarini.resa.ui.model.JourneySearch
 import com.mazarini.resa.ui.screens.home.model.SavedJourneyState
 import com.mazarini.resa.ui.screens.home.model.StopPointsState
 import com.mazarini.resa.ui.screens.mapper.DomainToUiJourneySearchMapper
+import com.mazarini.resa.ui.util.copyUpdate
 import com.mazarini.resa.ui.util.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -42,20 +42,23 @@ constructor(
     private val saveCurrentJourneyQueryUseCase: SaveCurrentJourneyQueryUseCase,
     private val deleteSavedJourneySearchUseCase: DeleteSavedJourneySearchUseCase,
     private val deleteRecentJourneySearchUseCase: DeleteRecentJourneySearchUseCase,
-    private val getStopsByCoordinateUseCase: GetStopsByCoordinateUseCase,
     private val getRecentJourneySearchesUseCase: GetRecentJourneySearchesUseCase,
     private val journeySearchMapper: DomainToUiJourneySearchMapper,
     private val loadSavedJourneyToHomeUseCase: LoadSavedJourneyToHomeUseCase,
     private val prefsProvider: PrefsProvider,
 ) : ViewModel() {
 
-    val uiState: HomeUiState = HomeUiState()
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
         refreshToken()
         loadSavedJourneys()
         loadRecentJourneys()
+        loadCurrentLanguage()
+        loadCurrentTheme()
         checkPinnedHomeJourney()
+        checkOnboarding()
     }
 
     private fun checkPinnedHomeJourney() {
@@ -63,8 +66,33 @@ constructor(
             prefsProvider.getSavedJourney()?.let { journey ->
                 validateSavedJourney(journey)
             } ?: run {
-                uiState.pinnedHomeJourney.value = null
+                _uiState.copyUpdate { copy(pinnedHomeJourney = null) }
             }
+        }
+    }
+
+    private fun loadCurrentLanguage() {
+        viewModelScope.launch {
+            prefsProvider.getLanguage().let { language ->
+                _uiState.copyUpdate { copy(currentLanguage = language ?: "en") }
+            }
+        }
+    }
+
+    private fun loadCurrentTheme() {
+        viewModelScope.launch {
+            prefsProvider.getThemeSettings().let { theme ->
+                _uiState.copyUpdate { copy(currentTheme = theme) }
+            }
+        }
+    }
+
+    private fun checkOnboarding() {
+        viewModelScope.launch {
+            prefsProvider.hasSeenOnboarding().let { shown ->
+                _uiState.copyUpdate { copy(showOnboarding = !shown) }
+            }
+            prefsProvider.setSeenOnboarding()
         }
     }
 
@@ -73,12 +101,12 @@ constructor(
         if (hasFinished) {
             clearPinnedJourney()
         } else {
-            uiState.pinnedHomeJourney.value = journey
+            _uiState.copyUpdate { copy(pinnedHomeJourney = journey) }
         }
     }
 
     private fun clearPinnedJourney() {
-        uiState.pinnedHomeJourney.value = null
+        _uiState.copyUpdate { copy(pinnedHomeJourney = null) }
         viewModelScope.launch {
             prefsProvider.setSavedJourney(null)
         }
@@ -91,75 +119,49 @@ constructor(
     }
 
     private fun loadDeparturesAround(lat: Double, lon: Double) {
-//        uiState.currentLocation.value = Coordinate(lat = 57.679932, lon = 12.014784) // Home
-//        uiState.currentLocation.value = Coordinate(lat = 57.706599, lon = 11.968141) // Brunnsparken
-//        uiState.currentLocation.value = Coordinate(lat = 53.391628, lon = 36.784628) // Russia
-//        uiState.currentLocation.value = Coordinate(lat = 57.708386, lon = 11.972655) // Nordstan-Centrastationen
-        uiState.currentLocation.value = Coordinate(lat = lat, lon = lon)
-        uiState.stopPoints.value = StopPointsState.Loading
-//        viewModelScope.launch(Dispatchers.IO) {
-//            uiState.currentLocation.value?.let { coordinate ->
-//                getStopsByCoordinateUseCase(coordinate)
-//                    .onSuccess { stopPoints ->
-//                        Log.e(
-//                            "HomeViewModel", "VM stopPoints: ${stopPoints.size} " +
-//                                    "first departures: ${stopPoints.first().departures.size}"
-//                        )
-//                        uiState.isDeparturesReloading.value = false
-//                        stopPoints
-//                            .filterByDepartures()
-//                            .takeIf { it.isNotEmpty() }?.let {
-//                                uiState.stopPoints.value = StopPointsState.Loaded(it)
-//                            } ?: run {
-//                            uiState.stopPoints.value = StopPointsState.Error("No departures found")
-//                        }
-//                    }.onFailure { throwable ->
-//                        uiState.isDeparturesReloading.value = false
-//                        setDeparturesFailed(throwable.message ?: "")
-//                    }
-//            } ?: run {
-//                setDeparturesFailed("No location found")
-//            }
-//        }
-    }
-
-    private fun setDeparturesFailed(message: String) {
-        uiState.stopPoints.value = StopPointsState.Error(message)
+        _uiState.copyUpdate {
+            copy(
+                currentLocation = Coordinate(lat = lat, lon = lon),
+                stopPoints = StopPointsState.Loading,
+            )
+        }
     }
 
     private fun loadSavedJourneys() {
-        viewModelScope.launch(Dispatchers.IO) {
-            getSavedJourneySearchesUseCase()
-                .flowOn(Dispatchers.Main)
-                .collectLatest {
-                    val journeys = it.map { domainJourneySearch ->
-                        journeySearchMapper.map(domainJourneySearch)
-                    }
-                    uiState.savedJourneyState.value =
-                        if (it.isEmpty()) {
+        viewModelScope.launch {
+            getSavedJourneySearchesUseCase().flowOn(Dispatchers.IO).collectLatest { savedSearch ->
+                val journeys = savedSearch.map { domainJourneySearch ->
+                    journeySearchMapper.map(domainJourneySearch)
+                }
+                _uiState.copyUpdate {
+                    copy(
+                        savedJourneyState = if (savedSearch.isEmpty()) {
                             SavedJourneyState.Empty
                         } else {
                             SavedJourneyState.Loaded(journeys)
                         }
+                    )
                 }
+            }
         }
     }
 
     private fun loadRecentJourneys() {
-        viewModelScope.launch(Dispatchers.IO) {
-            getRecentJourneySearchesUseCase()
-                .flowOn(Dispatchers.Main)
-                .collectLatest {
-                    val journeys = it.map { domainJourneySearch ->
-                        journeySearchMapper.map(domainJourneySearch)
-                    }
-                    uiState.recentJourneysState.value =
-                        if (it.isEmpty()) {
+        viewModelScope.launch {
+            getRecentJourneySearchesUseCase().flowOn(Dispatchers.IO).collectLatest { recentSearch ->
+                val journeys = recentSearch.map { domainJourneySearch ->
+                    journeySearchMapper.map(domainJourneySearch)
+                }
+                _uiState.copyUpdate {
+                    copy(
+                        recentJourneysState = if (recentSearch.isEmpty()) {
                             SavedJourneyState.Empty
                         } else {
                             SavedJourneyState.Loaded(journeys)
                         }
+                    )
                 }
+            }
         }
     }
 
@@ -167,16 +169,18 @@ constructor(
         when (event) {
             is HomeUiEvent.OnSavedJourneyClicked -> verifyJourneySearch(event.journeySearch)
             is HomeUiEvent.DeleteSavedJourney -> deleteSavedJourneySearch(event.id)
-            HomeUiEvent.NavigationRequested -> uiState.navigateToJourneySelection.value = false
+            HomeUiEvent.NavigationRequested -> _uiState.copyUpdate { copy(navigateToJourneySelection = false) }
             is HomeUiEvent.UpdateGpsRequest -> updateGpsRequest(event)
             is HomeUiEvent.LocationResult -> executePendingLocationUse(event.lat, event.lon)
             is HomeUiEvent.CheckedPermission -> setCheckPermissionResult(event.hasPermission)
-            is HomeUiEvent.RefreshDepartures -> {}//refreshDepartures()
             is HomeUiEvent.ClearLoadingSavedJourneys -> clearLoadingSavedJourneys()
             is HomeUiEvent.DeleteRecentJourney -> deleteRecentJourneySearch(event.id)
             HomeUiEvent.LoadSavedJourneyToHome -> loadSavedJourneyToHome()
             HomeUiEvent.DeleteSavedJourneyToHome -> clearPinnedJourney()
             HomeUiEvent.CheckSavedJourneyToHome -> checkPinnedHomeJourney()
+            is HomeUiEvent.SetLanguage -> setLanguage(event.language)
+            HomeUiEvent.OnboardShown -> _uiState.copyUpdate { copy(showOnboarding = false) }
+            is HomeUiEvent.OnThemeChanged -> updateThemeSettings(event.themeSettings)
         }
     }
 
@@ -185,52 +189,69 @@ constructor(
             loadSavedJourneyToHomeUseCase()
         }
     }
-    private fun clearLoadingSavedJourneys() {
-        (uiState.savedJourneyState.value as? SavedJourneyState.Loaded)?.let { savedJourneys ->
-            val updatedJourneys = savedJourneys.journeys.map { it.copy(isLoading = false) }
-            uiState.savedJourneyState.value = SavedJourneyState.Loaded(updatedJourneys)
+
+    private fun updateThemeSettings(themeSettings: ThemeSettings) {
+        viewModelScope.launchIO {
+            prefsProvider.setThemeSettings(themeSettings)
+            _uiState.copyUpdate { copy(currentTheme = themeSettings) }
         }
-        (uiState.recentJourneysState.value as? SavedJourneyState.Loaded)?.let { savedJourneys ->
-            val updatedJourneys = savedJourneys.journeys.map { it.copy(isLoading = false) }
-            uiState.recentJourneysState.value = SavedJourneyState.Loaded(updatedJourneys)
+    }
+    private fun setLanguage(language: String) {
+        viewModelScope.launch {
+            prefsProvider.setLanguage(language)
         }
     }
 
-    private fun refreshDepartures() {
-        uiState.isDeparturesReloading.value = true
-        uiState.currentLocation.value?.let {
-            loadDeparturesAround(it.lat, it.lon)
+    private fun clearLoadingSavedJourneys() {
+        (_uiState.value.savedJourneyState as? SavedJourneyState.Loaded)?.let { savedJourneys ->
+            val updatedJourneys = savedJourneys.journeys.map { it.copy(isLoading = false) }
+            _uiState.copyUpdate { copy(savedJourneyState = SavedJourneyState.Loaded(updatedJourneys)) }
+        }
+        (_uiState.value.recentJourneysState as? SavedJourneyState.Loaded)?.let { savedJourneys ->
+            val updatedJourneys = savedJourneys.journeys.map { it.copy(isLoading = false) }
+            _uiState.copyUpdate { copy(recentJourneysState = SavedJourneyState.Loaded(updatedJourneys)) }
         }
     }
 
     private fun updateGpsRequest(event: HomeUiEvent.UpdateGpsRequest) {
-        event.pendingLocationUse?.let { uiState.pendingLocationUses.value = it }
-        uiState.requestGpsLocation.value = event.request
+        _uiState.copyUpdate {
+            copy(
+                pendingLocationUses = event.pendingLocationUse ?: pendingLocationUses,
+                requestGpsLocation = event.request,
+            )
+        }
     }
+
 
     private fun setCheckPermissionResult(hasPermission: Boolean) {
-        if (hasPermission) {
-            uiState.pendingLocationUses.value = PendingLocationUse.SEARCH_DEPARTURES_AROUND
-            uiState.requestGpsLocation.value = true
-        } else {
-            uiState.stopPoints.value = StopPointsState.NeedLocation
+        _uiState.copyUpdate {
+            copy(
+                requestGpsLocation = if (hasPermission) true else requestGpsLocation,
+                pendingLocationUses = if (hasPermission) PendingLocationUse.SEARCH_DEPARTURES_AROUND else pendingLocationUses,
+                stopPoints = if (!hasPermission) StopPointsState.NeedLocation else stopPoints,
+                hasLocationPermission = hasPermission,
+                hasCheckedPermission = true,
+            )
         }
-        uiState.hasLocationPermission.value = hasPermission
-        uiState.hasCheckedPermission.value = true
     }
 
+
     private fun executePendingLocationUse(lat: Double, lon: Double) {
-        when (uiState.pendingLocationUses.value) {
+        when (_uiState.value.pendingLocationUses) {
             PendingLocationUse.SEARCH_SAVED_JOURNEY -> updateJourneySearchWithLocation(lat, lon)
             PendingLocationUse.SEARCH_DEPARTURES_AROUND -> loadDeparturesAround(lat, lon)
             else -> {}
         }
-        uiState.hasLocationPermission.value = true
-        uiState.pendingLocationUses.value = PendingLocationUse.NONE
+        _uiState.copyUpdate {
+            copy(
+                hasLocationPermission = true,
+                pendingLocationUses = PendingLocationUse.NONE,
+            )
+        }
     }
 
     private fun updateJourneySearchWithLocation(lat: Double, lon: Double) {
-        uiState.journeySearchRequest.value?.let {
+        _uiState.value.journeySearchRequest?.let {
             val updatedSearch = if (it.origin.isGps()) {
                 it.copy(origin = it.origin.copy(lat = lat, lon = lon))
             } else {
@@ -255,9 +276,13 @@ constructor(
     private fun verifyJourneySearch(journeySearch: JourneySearch) {
         setSavedJourneyLoading(journeySearch.id)
         if (journeySearch.origin.isGps() || journeySearch.destination.isGps()) {
-            uiState.pendingLocationUses.value = PendingLocationUse.SEARCH_SAVED_JOURNEY
-            uiState.requestGpsLocation.value = true
-            uiState.journeySearchRequest.value = journeySearch
+            _uiState.copyUpdate {
+                copy(
+                    requestGpsLocation = true,
+                    pendingLocationUses = PendingLocationUse.SEARCH_SAVED_JOURNEY,
+                    journeySearchRequest = journeySearch,
+                )
+            }
         } else {
             clearLoadingSavedJourneys()
             searchSavedJourney(journeySearch)
@@ -265,22 +290,18 @@ constructor(
     }
 
     private fun setSavedJourneyLoading(id: String) {
-        (uiState.savedJourneyState.value as? SavedJourneyState.Loaded)?.let { savedJourneys ->
+        (uiState.value.savedJourneyState as? SavedJourneyState.Loaded)?.let { savedJourneys ->
             val updatedJourneys = savedJourneys.journeys.map {
                 if (it.id == id) it.copy(isLoading = true) else it
             }
-            uiState.savedJourneyState.value = SavedJourneyState.Loaded(updatedJourneys)
+            _uiState.copyUpdate { copy(savedJourneyState = SavedJourneyState.Loaded(updatedJourneys)) }
         }
-        (uiState.recentJourneysState.value as? SavedJourneyState.Loaded)?.let { savedJourneys ->
+        (uiState.value.recentJourneysState as? SavedJourneyState.Loaded)?.let { savedJourneys ->
             val updatedJourneys = savedJourneys.journeys.map {
                 if (it.id == id) it.copy(isLoading = true) else it
             }
-            uiState.recentJourneysState.value = SavedJourneyState.Loaded(updatedJourneys)
+            _uiState.copyUpdate { copy(recentJourneysState = SavedJourneyState.Loaded(updatedJourneys)) }
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
     }
 
     private fun searchSavedJourney(journeySearch: JourneySearch) {
@@ -300,7 +321,7 @@ constructor(
         )
         viewModelScope.launch {
             saveCurrentJourneyQueryUseCase(currentJourneyQuery)
-            uiState.navigateToJourneySelection.value = true
+            _uiState.copyUpdate { copy(navigateToJourneySelection = true) }
         }
     }
 

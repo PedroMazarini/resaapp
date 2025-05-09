@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -27,8 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mazarini.resa.R
 import com.mazarini.resa.global.fake.FakeFactory
-import com.mazarini.resa.ui.commoncomponents.getDestName
-import com.mazarini.resa.ui.commoncomponents.getOriginName
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.Mdivider
 import com.mazarini.resa.ui.model.JourneySearch
 import com.mazarini.resa.ui.screens.home.state.HomeUiEvent
@@ -45,6 +44,7 @@ fun RecentJourneySearchItem(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .testTag("RecentJourneySearchItem_${journeySearch.id}")
             .clickable {
                 onEvent(HomeUiEvent.OnSavedJourneyClicked(journeySearch))
             },
@@ -122,15 +122,16 @@ fun RecentJourneySearchItem(
             } else {
                 Box(
                     modifier = Modifier
-                        .width(42.dp)
-                        .height(32.dp)
-                        .align(Alignment.CenterVertically)
+                        .align(Alignment.Top)
+                        .testTag("DeleteRecentJourneySearchItem_${journeySearch.id}")
                         .clickable { onEvent(HomeUiEvent.DeleteRecentJourney(journeySearch.id)) },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(id = R.drawable.ic_delete),
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(24.dp),
+                        painter = painterResource(id = R.drawable.ic_close),
                         contentDescription = null,
                         tint = MTheme.colors.textSecondary,
                     )

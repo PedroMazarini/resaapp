@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +60,7 @@ fun SavedHomeJourneyCard(
             )
             .clip(RoundedCornerShape(8.dp))
             .background(color = MTheme.colors.surface)
+            .testTag("SavedHomeJourneyCard_${journey.id}")
             .clickable {
                 onEvent(HomeUiEvent.LoadSavedJourneyToHome)
                 navigateTo(Route.JourneyDetails)
@@ -80,6 +82,7 @@ fun SavedHomeJourneyCard(
             Box(
                 modifier = Modifier
                     .align(Alignment.Top)
+                    .testTag("DeleteSavedHomeJourneyCard_${journey.id}")
                     .clickable { onEvent(HomeUiEvent.DeleteSavedJourneyToHome) }
             ) {
                 Icon(
@@ -151,8 +154,9 @@ fun JourneyDetails(journey: Journey) {
         ) {
             Text(
                 modifier = Modifier
-                    .padding(start = 8.dp),
-                text = getDepartText(journey = journey, now = now.value) +" - ",
+                    .padding(start = 8.dp)
+                    .weight(1f, false),
+                text = getDepartText(journey = journey, now = now) +" - ",
                 overflow = TextOverflow.Ellipsis,
                 style = MTheme.type.secondaryText.copy(fontSize = 14.sp),
                 maxLines = 3,
