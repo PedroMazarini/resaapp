@@ -13,7 +13,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.mazarini.resa.R
 import com.mazarini.resa.global.extensions.isNotNull
 import com.mazarini.resa.ui.screens.locationsearch.state.CurrentLocation
-import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiState
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.Previews
@@ -30,10 +28,8 @@ import com.mazarini.resa.ui.util.Previews
 @Composable
 fun CurrentLocationButton(
     modifier: Modifier = Modifier,
-    uiState: LocationSearchUiState,
+    currentLocation: CurrentLocation?,
 ) {
-
-    val currentLocation by uiState.currentLocationRequest
 
     Row(
         modifier = modifier
@@ -76,7 +72,7 @@ fun CurrentLocationButton(
 fun CurrentLocationButtonPreview() {
     ResaTheme {
         CurrentLocationButton(
-            uiState = LocationSearchUiState(),
+            currentLocation = null,
         )
     }
 }

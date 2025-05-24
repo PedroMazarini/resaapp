@@ -6,8 +6,6 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-private const val TAG = "Permissions Commons"
-
 class Common {
 
     companion object {

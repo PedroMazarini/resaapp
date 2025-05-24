@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mazarini.resa.domain.model.journey.Leg
@@ -28,8 +29,9 @@ fun LegsSummaryBar(
 ) {
     Column(
         modifier = modifier.background(color = MTheme.colors.background)
+            .testTag("LegsSummaryBar")
     ) {
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
             color = MTheme.colors.graph.minimal,
             thickness = 1.dp,
@@ -49,7 +51,7 @@ fun LegsSummaryBar(
                 }
             }
         }
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
             color = MTheme.colors.graph.minimal,
             thickness = 1.dp,

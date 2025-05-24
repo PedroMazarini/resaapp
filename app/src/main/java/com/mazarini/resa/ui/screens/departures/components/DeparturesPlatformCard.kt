@@ -11,7 +11,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -50,7 +49,7 @@ fun DeparturesPlatformCard(
             platform = platformJourneys.first().platform,
         )
         platformJourneys.forEachIndexed { index, stopJourney ->
-            val now by getTimeUpdate(interval = TimeUpdateInterval.TEN_SECONDS)
+            val now = getTimeUpdate(interval = TimeUpdateInterval.TEN_SECONDS)
             val departInMilli = remember { mutableLongStateOf(stopJourney.time.diffFrom(now)) }
 
             Row(

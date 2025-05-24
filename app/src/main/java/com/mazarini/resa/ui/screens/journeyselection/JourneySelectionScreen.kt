@@ -6,24 +6,22 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -33,7 +31,6 @@ import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mazarini.resa.R
 import com.mazarini.resa.global.extensions.safeLet
-import com.mazarini.resa.global.extensions.toggle
 import com.mazarini.resa.global.fake.FakeFactory
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.FiltersTopBar
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.JourneyFilter
@@ -52,22 +49,22 @@ import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.Previews
 import com.mazarini.resa.ui.util.mapsconfiguration.openWalkDirectionsOnMaps
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @Composable
 fun JourneySelectionScreen(
-    uiState: JourneySelectionUiState,
+    journeySelectionUiState: StateFlow<JourneySelectionUiState>,
     onEvent: (JourneySelectionUiEvent) -> Unit,
-    navigateTo: (route: Route) -> Unit = {},
+    navigateTo: (Route) -> Unit = {},
     upPress: () -> Unit,
 ) {
 
+    val uiState by journeySelectionUiState.collectAsState()
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-    ) {
+    Surface(modifier = Modifier.fillMaxSize()) {
         JourneySelectionList(
             uiState = uiState,
             onEvent = onEvent,
@@ -87,14 +84,14 @@ fun JourneySelectionList(
     navigateTo: (route: Route) -> Unit = {},
     upPress: () -> Unit,
 ) {
-    val upcomingJourneysResult by uiState.upcomingJourneys
+    val upcomingJourneysResult = uiState.upcomingJourneys
     val upcomingJourneysPaging = upcomingJourneysResult.collectAsLazyPagingItems()
 
-    val passedJourneysResult by uiState.passedJourneys
+    val passedJourneysResult = uiState.passedJourneys
     val passedJourneysPaging = passedJourneysResult.collectAsLazyPagingItems()
 
-    val isUpcoming = remember { mutableStateOf(true) }
-    val showFilters = remember { mutableStateOf(false) }
+    var isUpcoming by remember { mutableStateOf(true) }
+    var showFilters by remember { mutableStateOf(false) }
 
     /** States */
     val modalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -112,7 +109,7 @@ fun JourneySelectionList(
             stickyHeader {
                 FiltersTopBar(
                     iconId = R.drawable.ic_back,
-                    filterDetail = getFilterDetailText(uiState.filterUiState.filters.value),
+                    filterDetail = getFilterDetailText(uiState.filterUiState.filters),
                     onIconClicked = {
                         handleBackPress(
                             sheetState = modalSheetState,
@@ -122,7 +119,7 @@ fun JourneySelectionList(
                     },
                 ) {
                     onEvent(JourneySelectionUiEvent.UpdateJourneySearch)
-                    showFilters.toggle()
+                    showFilters = !showFilters
                 }
             }
             item {
@@ -130,7 +127,8 @@ fun JourneySelectionList(
                     modifier = Modifier
                         .padding(start = 24.dp)
                         .padding(top = 24.dp),
-                    uiState = uiState,
+                    queryParams = uiState.queryParams,
+                    showFeatureHighlight = uiState.showFeatureHighlight,
                     onEvent = onEvent,
                 )
             }
@@ -140,13 +138,13 @@ fun JourneySelectionList(
                 ) {
                     JourneysTab(
                         modifier = Modifier.padding(top = 16.dp),
-                        isUpcoming = isUpcoming.value,
+                        isUpcoming = isUpcoming,
                     ) {
-                        isUpcoming.value = it
+                        isUpcoming = it
                     }
                 }
             }
-            if (isUpcoming.value) {
+            if (isUpcoming) {
                 items(
                     count = upcomingJourneysPaging.itemCount,
                 ) { index ->
@@ -204,7 +202,7 @@ fun JourneySelectionList(
         }
     }
 
-    if (showFilters.value) {
+    if (showFilters) {
         ModalBottomSheet(
             modifier = Modifier,
             shape = RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp),
@@ -212,7 +210,7 @@ fun JourneySelectionList(
             scrimColor = MTheme.colors.surfaceBlur,
             dragHandle = null,
             tonalElevation = 8.dp,
-            onDismissRequest = { showFilters.value = false }
+            onDismissRequest = { showFilters = false }
         ) {
             JourneyFilter(
                 uiState = uiState.filterUiState,
@@ -220,7 +218,7 @@ fun JourneySelectionList(
             ) {
                 onEvent(JourneySelectionUiEvent.UpdateJourneySearch)
                 scope.launch { modalSheetState.hide() }
-                showFilters.value = false
+                showFilters = false
             }
         }
     }
@@ -264,28 +262,12 @@ private fun interceptFilterEvents(
         )
 
         is JourneyFilterUiEvent.OnModesChanged -> {
-            onEvent(JourneySelectionUiEvent.TransportModesChanged)
+            onEvent(JourneySelectionUiEvent.TransportModesChanged(it.modes))
         }
 
         else -> {}
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun getBottomSheetState() =
-    SheetState(
-        initialValue = SheetValue.Hidden,
-        skipPartiallyExpanded = true
-    )
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun getBottomSheetScaffoldState(sheetState: SheetState) =
-    rememberBottomSheetScaffoldState(
-        bottomSheetState = sheetState,
-    )
-
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
@@ -293,9 +275,10 @@ private fun getBottomSheetScaffoldState(sheetState: SheetState) =
 fun JourneySelectionScreenPreview() {
     ResaTheme {
         JourneySelectionScreen(
-            uiState = JourneySelectionUiState(
-                upcomingJourneys = mutableStateOf(
-                    flowOf(PagingData.from(FakeFactory.journeyList())),
+            journeySelectionUiState = MutableStateFlow(
+                JourneySelectionUiState(
+                    upcomingJourneys =
+                        flowOf(PagingData.from(FakeFactory.journeyList())),
                 )
             ),
             onEvent = {},

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -51,7 +51,7 @@ fun SearchFieldSeparatorRow(
                 )
             }
 
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.padding(start = 72.dp, end = 24.dp),
                 color = MTheme.colors.graph.minimal,
                 thickness = 1.dp,

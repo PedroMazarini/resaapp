@@ -6,14 +6,6 @@ import com.mazarini.resa.domain.model.journey.LegColors
 import com.mazarini.resa.ui.theme.colors.FrenchBlue
 import java.lang.Exception
 
-inline fun <T: Any> guardLet(vararg elements: T?, closure: () -> Nothing): List<T> {
-    return if (elements.all { it != null }) {
-        elements.filterNotNull()
-    } else {
-        closure()
-    }
-}
-
 fun <T> List<T>.ifEmpty(default: () -> List<T>): List<T> {
     return if (this.isEmpty()) default() else this
 }
@@ -24,10 +16,6 @@ infix fun <T> List<T>.isBounds(index: Int): Boolean {
 
 infix fun Int?.or(value: Int): Int {
     return this ?: value
-}
-
-fun MutableState<Boolean>.toggle() {
-    this.value = !this.value
 }
 
 infix fun MutableState<Boolean>.set(setValue: Boolean) {
@@ -42,12 +30,6 @@ fun <T> List<T>.toggle(element: T): List<T> {
         this - element
     } else {
         this + element
-    }
-}
-
-inline fun <T: Any> ifLet(vararg elements: T?, closure: (List<T>) -> Unit) {
-    if (elements.all { it != null }) {
-        closure(elements.filterNotNull())
     }
 }
 

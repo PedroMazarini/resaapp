@@ -17,14 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mazarini.resa.R
 import com.mazarini.resa.ui.navigation.Route
-import com.mazarini.resa.ui.screens.journeydetails.components.journeydetailedlegs.legdetails.PageIndicator
+import com.mazarini.resa.ui.screens.onboarding.components.PageIndicator
 import com.mazarini.resa.ui.screens.onboarding.components.DeparturesItem
 import com.mazarini.resa.ui.screens.onboarding.components.DetailsItem
 import com.mazarini.resa.ui.screens.onboarding.components.FiltersItem
@@ -39,7 +38,6 @@ const val ONBOARDING_PAGES_COUNT = 6
 
 @Composable
 fun OnboardingScreen(
-    modifier: Modifier = Modifier,
     navigateTo: (route: Route) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()

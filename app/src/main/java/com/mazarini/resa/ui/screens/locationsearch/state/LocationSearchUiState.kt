@@ -1,34 +1,29 @@
 package com.mazarini.resa.ui.screens.locationsearch.state
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.flow.emptyFlow
 import androidx.paging.PagingData
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.state.JourneyFilterUiState
 import com.mazarini.resa.ui.model.Location
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 
 const val MIN_LENGTH_FOR_SEARCH = 3
 
 data class LocationSearchUiState(
-    val originSearchRes: MutableState<Flow<PagingData<Location>>> = mutableStateOf(emptyFlow()),
-    val destSearchRes: MutableState<Flow<PagingData<Location>>> = mutableStateOf(emptyFlow()),
-    val originSearch: MutableStateFlow<String> = MutableStateFlow(""),
-    val destSearch: MutableStateFlow<String> = MutableStateFlow(""),
-    val requestOriginFocus: MutableState<Boolean> = mutableStateOf(false),
-    val requestDestFocus: MutableState<Boolean> = mutableStateOf(false),
-    val currentSearchType: MutableStateFlow<CurrentSearchType> = MutableStateFlow(CurrentSearchType.ORIGIN),
-//    val journeyFilters: MutableState<JourneyFilters> = mutableStateOf(JourneyFilters()),
-    val originSelected: MutableStateFlow<Location?> = MutableStateFlow(null),
-    val destSelected: MutableStateFlow<Location?> = MutableStateFlow(null),
-    val isSelectionComplete: MutableStateFlow<Boolean> = MutableStateFlow(false),
-    val showLocationButton: MutableState<Boolean> = mutableStateOf(true),
-    val currentLocationRequest: MutableState<CurrentLocation?> = mutableStateOf(null),
+    val originSearchRes: Flow<PagingData<Location>> = emptyFlow(),
+    val destSearchRes: Flow<PagingData<Location>> = emptyFlow(),
+    val originSearch: String = "",
+    val destSearch: String = "",
+    val requestOriginFocus: Boolean = false,
+    val requestDestFocus: Boolean = false,
+    val currentSearchType: CurrentSearchType = CurrentSearchType.ORIGIN,
+    val originSelected: Location? = null,
+    val destSelected: Location? = null,
+    val isSelectionComplete: Boolean = false,
+    val showLocationButton: Boolean = true,
+    val currentLocationRequest: CurrentLocation? = null,
     /** Location suggestions */
-    val savedLocations: MutableState<List<Location>> = mutableStateOf(emptyList()),
-    val recentLocations: MutableState<List<Location>> = mutableStateOf(emptyList()),
-
+    val savedLocations: List<Location> = emptyList(),
+    val recentLocations: List<Location> = emptyList(),
     /** Filters UI state */
     val filtersUiState: JourneyFilterUiState = JourneyFilterUiState(),
 )

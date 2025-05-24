@@ -23,7 +23,6 @@ import com.mazarini.resa.domain.model.stoparea.StopJourney
 import com.mazarini.resa.global.fake.FakeFactory
 import com.mazarini.resa.ui.commoncomponents.LegBoxIcon
 import com.mazarini.resa.ui.screens.departures.state.DeparturesUiEvent
-import com.mazarini.resa.ui.screens.departures.state.DeparturesUiState
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.Previews
@@ -39,11 +38,9 @@ import eu.bambooapps.material3.pullrefresh.rememberPullRefreshState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeparturesResultList(
-    uiState: DeparturesUiState,
+    departures: List<StopJourney>,
     onEvent: (DeparturesUiEvent) -> Unit,
 ) {
-
-    val departures by remember { uiState.departures }
     val isRefreshing by remember {
         mutableStateOf(false)
     }
@@ -146,9 +143,7 @@ fun LineBox(
 fun GetDeparturesAroundUseCasePreview() {
     ResaTheme {
         DeparturesResultList(
-            uiState = DeparturesUiState(
-                departures = mutableStateOf(FakeFactory.stopJourneyList()),
-            ),
+            departures = FakeFactory.stopJourneyList(),
             onEvent = {},
         )
     }

@@ -27,7 +27,10 @@ fun DeparturesItem(
     modifier: Modifier = Modifier,
 ) {
     val titleBaseStyle = MTheme.type.highlightTitle.fontSize(34.sp).toSpanStyle()
-    val titlePatternStyle = MTheme.type.highlightTitle.fontSize(34.sp).color(MTheme.colors.primary).toSpanStyle()
+    val titlePatternStyle = MTheme.type.highlightTitle
+        .fontSize(34.sp)
+        .color(MTheme.colors.primary)
+        .toSpanStyle()
 
     Column(
         modifier = modifier

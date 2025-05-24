@@ -18,7 +18,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,30 +72,29 @@ fun DetailsMap(
     onEvent: (JourneyDetailsUiEvent) -> Unit,
     mapLoadedInit: Boolean = false,
 ) {
-    val hasLocationAccess by uiState.hasLocationAccess
-    val selectedJourney by uiState.selectedJourney.collectAsState()
-    val followingVehicle by uiState.followingVehicle
+    val followingVehicle = uiState.followingVehicle
     val mapLoaded = remember { mutableStateOf(mapLoadedInit) }
-    val legs = selectedJourney?.legs.orEmpty()
+    val legs = uiState.selectedJourney?.legs.orEmpty()
     val coroutineScope = rememberCoroutineScope()
     val mapStyling = MTheme.mapsStyling.json
     val uiSettings = getUiSettings()
-    val busesTracking = uiState.trackedVehicles.value
+    val busesTracking = uiState.trackedVehicles
     val trackingStates: Map<String, MarkerState> = busesTracking.associate {
         it.name to rememberMarkerState()
     }
     val mapProperties = MapProperties(
         mapStyleOptions = MapStyleOptions(mapStyling),
-        isMyLocationEnabled = hasLocationAccess,
+        isMyLocationEnabled = uiState.hasLocationAccess,
     )
 
     val zoomLevel = ZoomLevels.Streets
     val cameraPositionState = rememberCameraPositionState()
     val screenBorder = getScreenBorder(followingVehicle)
 
-    Box(modifier = modifier
-        .fillMaxSize()
-        .border(screenBorder)
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .border(screenBorder)
     ) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
@@ -116,7 +114,6 @@ fun DetailsMap(
             }
             LaunchedEffect(Unit) {
                 coroutineScope.launch {
-
                     cameraPositionState.animate(CameraUpdateFactory.zoomTo(zoomLevel.level))
                     cameraPositionState.animate(
                         CameraUpdateFactory.newLatLngBounds(
@@ -130,14 +127,22 @@ fun DetailsMap(
             LaunchedEffect(key1 = followingVehicle?.position) {
                 coroutineScope.launch {
                     with(followingVehicle ?: return@launch) {
-                        val cameraPosition = CameraPosition.fromLatLngZoom(this.position.toLatLng(), ZoomLevels.Blocks.level)
-                        cameraPositionState.animate(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                        val cameraPosition = CameraPosition.fromLatLngZoom(
+                            this.position.toLatLng(),
+                            ZoomLevels.Blocks.level
+                        )
+                        cameraPositionState.animate(
+                            CameraUpdateFactory.newCameraPosition(
+                                cameraPosition
+                            )
+                        )
                     }
                 }
             }
             LaunchedEffect(key1 = cameraPositionState.cameraMoveStartedReason) {
                 if (cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE &&
-                    followingVehicle != null) {
+                    followingVehicle != null
+                ) {
                     onEvent(JourneyDetailsUiEvent.StopFollowingVehicle)
                 }
             }
@@ -151,7 +156,11 @@ fun DetailsMap(
                 onEvent(JourneyDetailsUiEvent.SetShouldShowMap(false))
             }
 
-            FollowButtons(uiState, onEvent)
+            FollowButtons(
+                trackedVehicles = busesTracking,
+                followingVehicle = followingVehicle,
+                onEvent,
+            )
         }
 
         if (!mapLoaded.value) {
@@ -208,20 +217,19 @@ fun DetailsMap(
 
 @Composable
 fun getScreenBorder(followingVehicle: VehiclePosition?): BorderStroke {
-    followingVehicle?.let {
-        return BorderStroke(2.dp, it.colors.primaryColor())
+    return followingVehicle?.let {
+        BorderStroke(2.dp, it.colors.primaryColor())
     } ?: run {
-        return BorderStroke(0.dp, Color.Transparent)
+        BorderStroke(0.dp, Color.Transparent)
     }
 }
 
 @Composable
 fun FollowButtons(
-    uiState: JourneyDetailsUiState,
+    trackedVehicles: List<VehiclePosition>,
+    followingVehicle: VehiclePosition?,
     onEvent: (JourneyDetailsUiEvent) -> Unit,
 ) {
-    val trackedVehicles by uiState.trackedVehicles
-    val followingVehicle by uiState.followingVehicle
     trackedVehicles.forEach { vehicle ->
         FollowButton(
             modifier = Modifier.padding(top = 8.dp),

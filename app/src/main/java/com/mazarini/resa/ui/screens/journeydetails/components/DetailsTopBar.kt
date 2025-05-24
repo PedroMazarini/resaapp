@@ -14,12 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mazarini.resa.R
+import com.mazarini.resa.domain.model.journey.Journey
+import com.mazarini.resa.global.fake.FakeFactory
 import com.mazarini.resa.ui.screens.journeydetails.state.JourneyDetailsUiEvent
-import com.mazarini.resa.ui.screens.journeydetails.state.JourneyDetailsUiState
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 
@@ -27,7 +29,7 @@ import com.mazarini.resa.ui.theme.ResaTheme
 @Composable
 fun DetailsTopBar(
     modifier: Modifier = Modifier,
-    uiState: JourneyDetailsUiState,
+    journey: Journey,
     onEvent: (JourneyDetailsUiEvent) -> Unit = {},
 ) {
 
@@ -39,6 +41,7 @@ fun DetailsTopBar(
             IconButton(
                 onClick = { onEvent(JourneyDetailsUiEvent.OnBackPressed) },
                 modifier = Modifier
+                    .testTag("DetailsTopBar_Back")
                     .clip(CircleShape)
                     .background(MTheme.colors.btnBackground)
                     .size(32.dp)
@@ -54,8 +57,7 @@ fun DetailsTopBar(
             modifier = Modifier
                 .padding(horizontal = 8.dp)
                 .weight(1f),
-            uiState = uiState,
-            onEvent = onEvent,
+            journey = journey
         )
     }
 }
@@ -66,7 +68,7 @@ fun DetailsTopBarPreview() {
     ResaTheme(darkTheme = false) {
         DetailsTopBar(
             modifier = Modifier.background(color = Color.White),
-            uiState = JourneyDetailsUiState(),
+            journey = FakeFactory.journey(),
         )
     }
 }

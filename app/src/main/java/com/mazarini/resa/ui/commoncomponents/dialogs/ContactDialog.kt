@@ -37,7 +37,8 @@ import com.mazarini.resa.global.extensions.asCardElevation
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.showMessage
-
+import androidx.core.net.toUri
+import com.mazarini.resa.BuildConfig
 
 @Composable
 fun ContactDialog(
@@ -121,12 +122,12 @@ private fun sendEmail(
     clipboardManager: ClipboardManager,
 ) {
 
-    val version = context.packageManager.getPackageInfo("com.mazarini.resa", 0).versionName.orEmpty()
+    val version = context.packageManager.getPackageInfo(BuildConfig.APPLICATION_ID, 0).versionName.orEmpty()
     clipboardManager.setText(AnnotatedString(CONTACT_EMAIL))
 
     try {
         val emailIntent = Intent(Intent.ACTION_SENDTO)
-        emailIntent.setData(Uri.parse("mailto:"))
+        emailIntent.setData("mailto:".toUri())
         emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(CONTACT_EMAIL))
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "v$version - Contact Resa")
         context.startActivity(emailIntent)

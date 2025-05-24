@@ -109,7 +109,6 @@ fun WarningBar(
             }
             if (isExpanded.value) {
                 val clipboardManager: ClipboardManager = LocalClipboardManager.current
-                val context = LocalContext.current
                 Row (
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -149,16 +148,11 @@ fun copyWarningMessages(clipboardManager: ClipboardManager, warnings: List<Warni
 }
 
 @Composable
-fun RowScope.TransLateButton(
+fun TransLateButton(
     warnings: List<Warning>,
     isTranslated: MutableState<Boolean>,
     result: (List<Warning>) -> Unit,
 ) {
-    val icon = painterResource(
-        id =
-        if (isTranslated.value) R.drawable.ic_return
-        else R.drawable.ic_translate
-    )
     val text = stringResource(
         id = if (isTranslated.value) R.string.see_original
         else R.string.translate

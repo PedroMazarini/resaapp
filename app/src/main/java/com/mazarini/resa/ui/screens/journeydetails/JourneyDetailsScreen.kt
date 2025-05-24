@@ -8,57 +8,58 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mazarini.resa.domain.model.TransportMode
 import com.mazarini.resa.domain.model.journey.Journey
 import com.mazarini.resa.global.extensions.safeLet
 import com.mazarini.resa.global.fake.FakeFactory
 import com.mazarini.resa.ui.commoncomponents.permissions.Common
-import com.mazarini.resa.ui.screens.journeydetails.components.AddToHomeButton
-import com.mazarini.resa.ui.screens.journeydetails.components.LegsSummaryBar
 import com.mazarini.resa.ui.screens.journeydetails.components.DepartBar
 import com.mazarini.resa.ui.screens.journeydetails.components.DetailsTopBar
 import com.mazarini.resa.ui.screens.journeydetails.components.JourneyDisclaimers
+import com.mazarini.resa.ui.screens.journeydetails.components.LegsSummaryBar
 import com.mazarini.resa.ui.screens.journeydetails.components.LoadingJourneyDetails
 import com.mazarini.resa.ui.screens.journeydetails.components.journeydetailedlegs.LegsLayout
 import com.mazarini.resa.ui.screens.journeydetails.components.journeydetailedlegs.legdetails.LegItem
 import com.mazarini.resa.ui.screens.journeydetails.components.journeydetailedlegs.sidebar.LegsSideBar
 import com.mazarini.resa.ui.screens.journeydetails.components.map.DetailsMap
+import com.mazarini.resa.ui.screens.journeydetails.components.map.MapCard
 import com.mazarini.resa.ui.screens.journeydetails.state.JourneyDetailsUiEvent
 import com.mazarini.resa.ui.screens.journeydetails.state.JourneyDetailsUiState
-import com.mazarini.resa.ui.screens.journeydetails.components.map.MapCard
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.getTravelTimeText
 import com.mazarini.resa.ui.util.mapsconfiguration.openWalkDirectionsOnMaps
 import com.mazarini.resa.ui.util.pxToDp
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun JourneyDetailsScreen(
-    uiState: JourneyDetailsUiState,
+    journeyDetailsUiState: StateFlow<JourneyDetailsUiState>,
     onEvent: (JourneyDetailsUiEvent) -> Unit = {},
 ) {
-    val selectedJourney by uiState.selectedJourney.collectAsState()
-    val hasCheckedForLocationAccess by uiState.hasCheckedForLocationAccess
-//    val isCurrentJourneyAddedHome by uiState.isCurrentJourneyAddedHome
-    val shouldShowMap by uiState.shouldShowMap
+    val uiState by journeyDetailsUiState.collectAsStateWithLifecycle()
     var shadowEffect by remember { mutableStateOf(0.dp) }
-    val offSetPx = remember { mutableFloatStateOf(0f) }
-//    val showAddButton by remember { derivedStateOf {
-//        offSetPx.floatValue == 0f && !isCurrentJourneyAddedHome
-//    }}
+    var offSetPx by remember { mutableFloatStateOf(0f) }
     val context = LocalContext.current
 
-    selectedJourney?.let { journey ->
-        if (shouldShowMap) {
+    uiState.selectedJourney?.let { journey ->
+        if (uiState.shouldShowMap) {
             DetailsMap(
                 modifier = Modifier.fillMaxSize(),
                 uiState = uiState,
@@ -66,9 +67,10 @@ fun JourneyDetailsScreen(
             )
         } else {
             Box {
-                Column (
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .testTag("JourneySelected_${journey.id}")
                         .background(MTheme.colors.background)
                 ) {
                     DetailsTopBar(
@@ -78,11 +80,11 @@ fun JourneyDetailsScreen(
                             .background(MTheme.colors.background)
                             .padding(horizontal = 24.dp, vertical = 12.dp),
                         onEvent = onEvent,
-                        uiState = uiState,
+                        journey = journey,
                     )
                     Column(
                         modifier = Modifier
-                            .offset(y = offSetPx.floatValue.pxToDp())
+                            .offset(y = offSetPx.pxToDp())
                     ) {
                         LegsSummaryBar(
                             modifier = Modifier
@@ -92,7 +94,7 @@ fun JourneyDetailsScreen(
                         )
                         MapCard(
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                            uiState = uiState,
+                            isTrackingAvailable = uiState.isTrackingAvailable,
                             onEvent = onEvent,
                         )
                         DepartBar(
@@ -127,24 +129,17 @@ fun JourneyDetailsScreen(
                             shadowEffect = if (isScrolling) 8.dp else 0.dp
                         },
                         scrollTo = { position ->
-                            offSetPx.floatValue = -position
+                            offSetPx = -position
                         },
                     )
                 }
-//                AddToHomeButton(
-//                    modifier = Modifier
-//                        .align(Alignment.BottomEnd)
-//                        .padding(end = 24.dp, bottom = 24.dp),
-//                    onEvent = onEvent,
-//                    visible = showAddButton,
-//                )
             }
         }
     } ?: run {
         LoadingJourneyDetails()
     }
 
-    if (!hasCheckedForLocationAccess) {
+    if (!uiState.hasCheckedForLocationAccess) {
         CheckLocationAccess(onEvent)
     }
 
@@ -166,7 +161,7 @@ private fun CheckLocationAccess(onEvent: (JourneyDetailsUiEvent) -> Unit) {
 fun interceptEvent(
     it: JourneyDetailsUiEvent,
     onEvent: (JourneyDetailsUiEvent) -> Unit,
-    context: Context
+    context: Context,
 ) {
     if (it is JourneyDetailsUiEvent.OnLegMapClicked) {
         safeLet(it.direction.from, it.direction.to) { from, to ->
@@ -180,7 +175,8 @@ fun interceptEvent(
 @Composable
 fun getJourneyTransportTime(journey: Journey): String? {
     if (journey.legs.first().transportMode == TransportMode.walk ||
-        journey.legs.last().transportMode == TransportMode.walk) {
+        journey.legs.last().transportMode == TransportMode.walk
+    ) {
         return getTravelTimeText(journey.transportDurationInMinutes.toLong())
     }
     return null
@@ -191,10 +187,10 @@ fun getJourneyTransportTime(journey: Journey): String? {
 fun TripDetailsScreenPreview() {
     ResaTheme {
         JourneyDetailsScreen(
-            uiState = JourneyDetailsUiState(
-                selectedJourney = MutableStateFlow(
-                    FakeFactory.journey()
-                ),
+            journeyDetailsUiState = MutableStateFlow(
+                JourneyDetailsUiState(
+                    selectedJourney = FakeFactory.journey(),
+                )
             ),
             onEvent = {},
         )

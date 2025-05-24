@@ -15,10 +15,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,22 +32,27 @@ import com.mazarini.resa.R
 import com.mazarini.resa.domain.model.TransportMode
 import com.mazarini.resa.domain.model.TransportMode.Companion.stringRes
 import com.mazarini.resa.global.extensions.capitalizeFirst
-import com.mazarini.resa.global.extensions.orFalse
 import com.mazarini.resa.global.extensions.toggle
-import com.mazarini.resa.global.preferences.PrefsProvider
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.iconResource
 import com.mazarini.resa.ui.util.showMessage
 import kotlinx.coroutines.launch
+import okhttp3.internal.immutableListOf
 
 @Composable
 fun TransportModesDialog(
-    onConfirm: () -> Unit,
+    onResult: (List<TransportMode>) -> Unit,
+    preferredModes: List<TransportMode>,
     onDismiss: () -> Unit,
 ) {
-    val prefsProvider = PrefsProvider(LocalContext.current.applicationContext)
-    val selectedModes = remember { mutableStateOf<List<TransportMode>?>(null) }
+    var selectedModes by remember { mutableStateOf(preferredModes) }
+    val selectableModes = immutableListOf(
+        TransportMode.bus,
+        TransportMode.tram,
+        TransportMode.ferry,
+        TransportMode.train
+    )
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -69,26 +75,13 @@ fun TransportModesDialog(
         },
         text = {
             Column(modifier = Modifier) {
-                TransportModeOption(
-                    transportMode = TransportMode.bus,
-                    checked = isModeSelected(selectedModes.value, TransportMode.bus),
-                    onClick = { selectedModes.value = selectedModes.value?.toggle(TransportMode.bus) }
-                )
-                TransportModeOption(
-                    transportMode = TransportMode.tram,
-                    checked = isModeSelected(selectedModes.value, TransportMode.tram),
-                    onClick = { selectedModes.value = selectedModes.value?.toggle(TransportMode.tram) }
-                )
-                TransportModeOption(
-                    transportMode = TransportMode.ferry,
-                    checked = isModeSelected(selectedModes.value, TransportMode.ferry),
-                    onClick = { selectedModes.value = selectedModes.value?.toggle(TransportMode.ferry) }
-                )
-                TransportModeOption(
-                    transportMode = TransportMode.train,
-                    checked = isModeSelected(selectedModes.value, TransportMode.train),
-                    onClick = { selectedModes.value = selectedModes.value?.toggle(TransportMode.train) }
-                )
+                selectableModes.forEach { mode ->
+                    TransportModeOption(
+                        transportMode = mode,
+                        checked = selectedModes.contains(mode),
+                        onClick = { selectedModes = selectedModes.toggle(mode) }
+                    )
+                }
             }
         },
         onDismissRequest = { onDismiss() },
@@ -96,12 +89,10 @@ fun TransportModesDialog(
             TextButton(
                 onClick = {
                     coroutineScope.launch {
-                        onConfirm()
-                        validateAndSave(
+                        validateAndReturn(
                             context = context,
-                            prefsProvider,
-                            selectedModes.value,
-                            onDismiss,
+                            selectedModes,
+                            onResult,
                         )
                     }
                 }
@@ -121,32 +112,21 @@ fun TransportModesDialog(
             }
         }
     )
-    LaunchedEffect(Unit) {
-        selectedModes.value = prefsProvider.getPreferredTransportModes()
+}
+
+fun validateAndReturn(
+    context: Context,
+    modes: List<TransportMode>,
+    onResult: (List<TransportMode>) -> Unit,
+) {
+    if (modes.isEmpty()) {
+        context.showMessage(
+            message = context.getString(R.string.select_at_least_one_mode),
+        )
+    } else {
+        onResult(modes)
     }
 }
-
-suspend fun validateAndSave(
-    context: Context,
-    prefsProvider: PrefsProvider,
-    modes: List<TransportMode>?,
-    onDismiss: () -> Unit,
-) {
-    modes?.let {
-        if (it.isEmpty()) {
-            context.showMessage(
-                message = context.getString(R.string.select_at_least_one_mode),
-            )
-        } else {
-            prefsProvider.setPreferredTransportModes(modes)
-            onDismiss()
-        }
-    } ?: onDismiss()
-}
-
-fun isModeSelected(selectedModes: List<TransportMode>?, mode: TransportMode): Boolean =
-    selectedModes?.contains(mode).orFalse
-
 
 @Composable
 fun TransportModeOption(
@@ -191,7 +171,8 @@ fun TransportModeOption(
 fun TransportModesPreview() {
     ResaTheme {
         TransportModesDialog(
-            onConfirm = { /*TODO*/ },
+            onResult = { /*TODO*/ },
+            preferredModes = TransportMode.selectableModes(),
             onDismiss = { /*TODO*/ },
         )
     }

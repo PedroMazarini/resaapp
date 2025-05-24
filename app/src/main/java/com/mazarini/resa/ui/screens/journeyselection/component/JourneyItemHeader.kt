@@ -72,8 +72,8 @@ fun JourneyItemHeader(
                 ) {
                     Text(
                         modifier = Modifier.align(CenterVertically),
-                        text = getDepartText(journey, now.longValue),
-                        style = departTextStyling(journey, now.longValue),
+                        text = getDepartText(journey, now),
+                        style = departTextStyling(journey, now),
                     )
                     if (journey.departure.time is JourneyTimes.Changed) {
                         Column(

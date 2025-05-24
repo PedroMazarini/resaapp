@@ -37,7 +37,6 @@ import com.mazarini.resa.global.analytics.loge
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 
-
 @Composable
 fun TicketsDialog(
     onDismiss: () -> Unit,

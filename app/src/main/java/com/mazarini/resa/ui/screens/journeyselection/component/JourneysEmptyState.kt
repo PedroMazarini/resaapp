@@ -29,7 +29,8 @@ fun JourneysEmptyState(
     Column(
         modifier = modifier
             .padding(top = 16.dp)
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(color = MTheme.colors.background),
         verticalArrangement = Arrangement.Center,
     ) {
         Image(

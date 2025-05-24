@@ -1,7 +1,6 @@
 package com.mazarini.resa.ui.screens.journeyselection.component
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -13,16 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,10 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.mazarini.resa.R
 import com.mazarini.resa.domain.model.LocationType
 import com.mazarini.resa.domain.model.queryjourneys.QueryJourneysParams
-import com.mazarini.resa.global.preferences.PrefsProvider
-import com.mazarini.resa.ui.commoncomponents.FeatureHighlight
 import com.mazarini.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent
-import com.mazarini.resa.ui.screens.journeyselection.state.JourneySelectionUiState
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.color
@@ -51,15 +47,13 @@ import kotlinx.coroutines.delay
 @Composable
 fun JourneyRouteSelected(
     modifier: Modifier = Modifier,
-    uiState: JourneySelectionUiState,
+    queryParams: QueryJourneysParams,
+    showFeatureHighlight: Boolean,
     onEvent: (JourneySelectionUiEvent) -> Unit,
 ) {
 
-    val queryParams by uiState.queryParams
-    val prefsProvider = PrefsProvider(LocalContext.current)
-    val showFeatureHighlight = remember { mutableStateOf(false) }
-    val showFeatureHighlightAnim = remember { mutableStateOf(false) }
-    val isSaved = remember { mutableStateOf(false) }
+    var showFeatureHighlightAnim = showFeatureHighlight
+    var isSaved by remember { mutableStateOf(false) }
 
     val savedToast = Toast.makeText(
         LocalContext.current,
@@ -117,10 +111,10 @@ fun JourneyRouteSelected(
             }
             IconButton(
                 onClick = {
-                    if (isSaved.value.not())
+                    if (isSaved.not())
                         onEvent(JourneySelectionUiEvent.SaveCurrentJourneySearch)
                     savedToast.show()
-                    isSaved.value = true
+                    isSaved = true
                 },
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
@@ -138,7 +132,7 @@ fun JourneyRouteSelected(
                 )
             }
         }
-        if (showFeatureHighlight.value) {
+        if (showFeatureHighlight) {
             FeatureHighlight(
                 modifier = Modifier
                     .align(Alignment.End),
@@ -148,7 +142,7 @@ fun JourneyRouteSelected(
                         .align(Alignment.TopEnd)
                         .padding(end = 24.dp)
                 },
-                visible = showFeatureHighlightAnim.value,
+                visible = showFeatureHighlightAnim,
                 message = stringResource(id = R.string.bookmark_search),
             )
         }
@@ -157,8 +151,7 @@ fun JourneyRouteSelected(
                 .fillMaxWidth()
                 .padding(top = 8.dp)
         ) {
-
-            Divider(
+            HorizontalDivider(
                 color = MTheme.colors.graph.minimal,
                 thickness = 1.dp,
             )
@@ -166,20 +159,16 @@ fun JourneyRouteSelected(
     }
 
     LaunchedEffect(Unit) {
-        val hasSeen = prefsProvider.getUserPrefs().hasSeenSaveQueryFeat
-        if (hasSeen.not()) {
-            prefsProvider.setSeenSaveQueryFeat()
-            showFeatureHighlight.value = true
-            showFeatureHighlightAnim.value = true
+        if (showFeatureHighlightAnim) {
             delay(5000)
-            showFeatureHighlightAnim.value = false
+            showFeatureHighlightAnim = false
         }
     }
 }
 
 @Composable
-fun getSaveIcon(isSaved: MutableState<Boolean>): Painter =
-    if (isSaved.value) {
+fun getSaveIcon(isSaved: Boolean): Painter =
+    if (isSaved) {
         painterResource(id = R.drawable.ic_check)
     } else {
         painterResource(id = R.drawable.bookmark_outline)
@@ -209,14 +198,11 @@ fun TripSearchLocationSelectedDarkPreview() {
     ResaTheme(darkTheme = true) {
         JourneyRouteSelected(
             modifier = Modifier,
-            uiState = JourneySelectionUiState(
-                queryParams = mutableStateOf(
-                    QueryJourneysParams(
-                        originName = "Origin",
-                        destinationName = "Destination",
-                    )
-                )
+            queryParams = QueryJourneysParams(
+                originName = "Origin",
+                destinationName = "Destination",
             ),
+            showFeatureHighlight = true,
             onEvent = {},
         )
     }
@@ -229,14 +215,11 @@ fun TripSearchLocationSelectedPreview() {
     ResaTheme {
         JourneyRouteSelected(
             modifier = Modifier.background(color = Color.White),
-            uiState = JourneySelectionUiState(
-                queryParams = mutableStateOf(
-                    QueryJourneysParams(
-                        originName = "Origin",
-                        destinationName = "Destination",
-                    )
-                )
+            queryParams = QueryJourneysParams(
+                originName = "Origin",
+                destinationName = "Destination",
             ),
+            showFeatureHighlight = true,
             onEvent = {},
         )
     }

@@ -15,10 +15,10 @@ import com.mazarini.resa.domain.usecases.journey.QueryPassedJourneysUseCase
 import com.mazarini.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
 import com.mazarini.resa.domain.usecases.journey.SaveJourneySearchUseCase
 import com.mazarini.resa.domain.usecases.journey.SetSelectedJourneyUseCase
+import com.mazarini.resa.global.analytics.logd
 import com.mazarini.resa.global.extensions.parseRfc3339
 import com.mazarini.resa.global.extensions.rfc3339
 import com.mazarini.resa.global.extensions.setHourMinute
-import com.mazarini.resa.global.analytics.logd
 import com.mazarini.resa.global.preferences.PrefsProvider
 import com.mazarini.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent.DateFilterChanged
 import com.mazarini.resa.ui.screens.journeyselection.state.JourneySelectionUiEvent.IsDepartFilterChanged
@@ -29,7 +29,10 @@ import com.mazarini.resa.ui.screens.journeyselection.state.JourneySelectionUiEve
 import com.mazarini.resa.ui.screens.locationsearch.model.JourneyFilters
 import com.mazarini.resa.ui.util.launchIO
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
@@ -49,20 +52,23 @@ constructor(
     private val prefsProvider: PrefsProvider,
 ) : ViewModel() {
 
-    val uiState: JourneySelectionUiState = JourneySelectionUiState()
+    private val _uiState: MutableStateFlow<JourneySelectionUiState> =
+        MutableStateFlow(JourneySelectionUiState())
+    val uiState: StateFlow<JourneySelectionUiState> = _uiState
 
     init {
         queryJourneys()
         queryPassedJourneys()
         loadCurrentQueryParams()
         loadCurrentPreferredModes()
+        checkFeatureDiscovery()
     }
 
     private fun loadCurrentQueryParams() {
         viewModelScope.launch {
             getCurrentJourneyQueryUseCase()
                 .onSuccess { queryParams ->
-                    uiState.queryParams.value = queryParams
+                    _uiState.update { it.copy(queryParams = queryParams) }
                     updateFilters(queryParams)
                 }
         }
@@ -70,33 +76,53 @@ constructor(
 
     private fun loadCurrentPreferredModes() {
         viewModelScope.launch {
-            prefsProvider.collectPreferredTransportModes().collectLatest {
-                uiState.filterUiState.preferredModes.value = it
+            prefsProvider.collectPreferredTransportModes().collectLatest { filter ->
+                _uiState.update {
+                    it.copy(
+                        filterUiState = it.filterUiState.copy(
+                            preferredModes = filter
+                        )
+                    )
+                }
             }
         }
     }
 
     private fun updateFilters(queryParams: QueryJourneysParams) {
-        uiState.filterUiState.filters.value = JourneyFilters(
-            date = queryParams.dateTime?.parseRfc3339() ?: Date(),
-            isDepartureFilters = queryParams.dateTimeRelatesTo == DEPARTURE,
-        )
+        _uiState.update {
+            it.copy(
+                filterUiState = it.filterUiState.copy(
+                    filters = JourneyFilters(
+                        date = queryParams.dateTime?.parseRfc3339() ?: Date(),
+                        isDepartureFilters = queryParams.dateTimeRelatesTo == DEPARTURE,
+                    )
+                )
+            )
+        }
     }
 
     private fun queryJourneys() {
         viewModelScope.launch {
-            uiState.upcomingJourneys.value = queryJourneysUseCase().cachedIn(viewModelScope)
+            _uiState.update {
+                it.copy(
+                    upcomingJourneys = queryJourneysUseCase().cachedIn(viewModelScope)
+                )
+            }
         }
     }
 
     private fun queryPassedJourneys() {
         viewModelScope.launch {
-            uiState.passedJourneys.value = queryPassedJourneysUseCase().cachedIn(viewModelScope)
+            _uiState.update {
+                it.copy(
+                    passedJourneys = queryPassedJourneysUseCase().cachedIn(viewModelScope)
+                )
+            }
         }
     }
 
     fun onEvent(event: JourneySelectionUiEvent) {
-        logd(className = TAG, "onEvent: ")
+        logd(className = TAG, "onEvent:  ${event::class.simpleName}")
         when (event) {
             is IsDepartFilterChanged -> setIsDepartureFilter(isDeparture = event.isDepart)
             is DateFilterChanged -> setDateFilter(event.date)
@@ -105,27 +131,27 @@ constructor(
             UpdateJourneySearch -> updateJourneySearch()
             is JourneySelected -> setJourneySelected(event.journey)
             is JourneySelectionUiEvent.OnLegMapClicked -> {}
-            is JourneySelectionUiEvent.TransportModesChanged -> { uiState.filtersChanged.value = true }
+            is JourneySelectionUiEvent.TransportModesChanged -> updatePreferredModes(event.modes)
         }
     }
 
     private fun setJourneySelected(journey: Journey) {
         setSelectedJourneyUseCase(
             journey.copy(
-                originName = uiState.queryParams.value.originName,
-                destName = uiState.queryParams.value.destinationName,
+                originName = _uiState.value.queryParams.originName,
+                destName = uiState.value.queryParams.destinationName,
             )
         )
     }
 
     private fun updateJourneySearch() {
-        if (uiState.filtersChanged.value) {
-            uiState.filtersChanged.value = false
-            with(uiState.filterUiState.filters.value) {
-                val newParams = uiState.queryParams.value.copy(
-                    dateTime = date.rfc3339(),
-                    dateTimeRelatesTo = if (isDepartureFilters) DEPARTURE else ARRIVAL,
-                    transportModes = uiState.filterUiState.preferredModes.value + TransportMode.walk,
+        if (_uiState.value.filtersChanged) {
+            _uiState.update { it.copy(filtersChanged = false) }
+            with(_uiState.value.filterUiState) {
+                val newParams = _uiState.value.queryParams.copy(
+                    dateTime = this.filters.date.rfc3339(),
+                    dateTimeRelatesTo = if (this.filters.isDepartureFilters) DEPARTURE else ARRIVAL,
+                    transportModes = this.preferredModes + TransportMode.walk,
                 )
                 viewModelScope.launchIO {
                     saveCurrentJourneyQueryUseCase(newParams)
@@ -137,7 +163,7 @@ constructor(
     }
 
     private fun saveCurrentJourneySearch() {
-        with(uiState.queryParams.value) {
+        with(_uiState.value.queryParams) {
             val origin = DomainLocation(
                 id = originGid.orEmpty(),
                 name = originName.orEmpty(),
@@ -165,28 +191,57 @@ constructor(
     }
 
     private fun setDateFilter(newDate: Date) {
-        uiState.filtersChanged.value = true
-        uiState.filterUiState.filters.value = with(uiState.filterUiState.filters.value) {
-            copy(
-                date = newDate,
+        _uiState.update {
+            it.copy(
+                filtersChanged = true,
+                filterUiState = it.filterUiState.copy(
+                    filters = it.filterUiState.filters.copy(date = newDate)
+                )
             )
         }
     }
 
     private fun setTimeFilter(newTime: Date) {
-        uiState.filtersChanged.value = true
-        uiState.filterUiState.filters.value = with(uiState.filterUiState.filters.value) {
-            copy(
-                date = this.date.setHourMinute(newTime),
+        _uiState.update {
+            it.copy(
+                filtersChanged = true,
+                filterUiState = it.filterUiState.copy(
+                    filters = it.filterUiState.filters.copy(
+                        date = it.filterUiState.filters.date.setHourMinute(
+                            newTime
+                        )
+                    )
+                )
             )
         }
     }
 
     private fun setIsDepartureFilter(isDeparture: Boolean) {
-        uiState.filtersChanged.value = true
-        uiState.filterUiState.filters.value = uiState.filterUiState.filters.value.copy(
-            isDepartureFilters = isDeparture
-        )
+        _uiState.update {
+            it.copy(
+                filtersChanged = true,
+                filterUiState = it.filterUiState.copy(
+                    filters = it.filterUiState.filters.copy(isDepartureFilters = isDeparture)
+                )
+            )
+        }
+    }
+
+    private fun updatePreferredModes(modes: List<TransportMode>) {
+        viewModelScope.launch {
+            prefsProvider.setPreferredTransportModes(modes)
+            _uiState.update { it.copy(filtersChanged = true) }
+        }
+    }
+
+    private fun checkFeatureDiscovery() {
+        viewModelScope.launch {
+            val hasSeen = prefsProvider.getUserPrefs().hasSeenSaveQueryFeat
+            if (hasSeen.not()) {
+                prefsProvider.setSeenSaveQueryFeat()
+                _uiState.update { it.copy(showFeatureHighlight = true) }
+            }
+        }
     }
 
     private companion object {

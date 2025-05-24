@@ -18,18 +18,17 @@ import com.mazarini.resa.domain.usecases.location.GetSavedLocationsUseCase
 import com.mazarini.resa.domain.usecases.location.QueryLocationByTextUseCase
 import com.mazarini.resa.domain.usecases.location.SaveLocationUseCase
 import com.mazarini.resa.domain.usecases.location.SaveRecentLocationUseCase
+import com.mazarini.resa.global.analytics.logd
 import com.mazarini.resa.global.extensions.isNull
 import com.mazarini.resa.global.extensions.parseRfc3339
 import com.mazarini.resa.global.extensions.rfc3339
 import com.mazarini.resa.global.extensions.safeLet
 import com.mazarini.resa.global.extensions.setDateOnly
 import com.mazarini.resa.global.extensions.setHourMinute
-import com.mazarini.resa.global.analytics.logd
 import com.mazarini.resa.global.preferences.PrefsProvider
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.state.JourneyFilterUiEvent
 import com.mazarini.resa.ui.model.Location
 import com.mazarini.resa.ui.model.LocationType
-import com.mazarini.resa.ui.screens.locationsearch.model.JourneyFilters
 import com.mazarini.resa.ui.screens.locationsearch.state.CurrentSearchType.DESTINATION
 import com.mazarini.resa.ui.screens.locationsearch.state.CurrentSearchType.ORIGIN
 import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.ClearDest
@@ -42,12 +41,14 @@ import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.O
 import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.OriginSearchChanged
 import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.SwapLocations
 import com.mazarini.resa.ui.screens.mapper.DomainToUiLocationMapper
+import com.mazarini.resa.ui.util.distinctCollectLatest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
@@ -70,9 +71,9 @@ constructor(
     private val prefsProvider: PrefsProvider,
 ) : ViewModel() {
 
-    val uiState: LocationSearchUiState = LocationSearchUiState()
-    private lateinit var originSearchJob: Job
-    private lateinit var destSearchJob: Job
+    private val _uiState = MutableStateFlow(LocationSearchUiState())
+    val uiState: StateFlow<LocationSearchUiState> = _uiState
+
     private var queryJourneysParams = QueryJourneysParams()
 
     init {
@@ -84,48 +85,60 @@ constructor(
 
     private fun loadLocationsSuggestions() {
         viewModelScope.launch(Dispatchers.IO) {
-            getSavedLocationsUseCase()
-                .flowOn(Dispatchers.Main)
-                .collectLatest {
-                    uiState.savedLocations.value = locationMapper.map(it)
-                    uiState.recentLocations.value =
-                        uiState.recentLocations.value.filter { location ->
-                            uiState.savedLocations.value.all { saved -> location.id != saved.id }
+            getSavedLocationsUseCase().collectLatest { savedLocations ->
+                _uiState.update {
+                    val savedIds = savedLocations.map { saved -> saved.id }.toSet()
+                    it.copy(
+                        savedLocations = locationMapper.map(savedLocations),
+                        recentLocations = it.recentLocations.filter { location ->
+                            location.id !in savedIds
                         }
+                    )
                 }
+            }
         }
         viewModelScope.launch(Dispatchers.IO) {
-            getRecentLocationsUseCase()
-                .flowOn(Dispatchers.Main)
-                .collectLatest {
-                    uiState.recentLocations.value = locationMapper.map(it).filter { location ->
-                        uiState.savedLocations.value.all { saved -> location.id != saved.id }
-                    }
+            getRecentLocationsUseCase().collectLatest { recentLocations ->
+                _uiState.update { state ->
+                    state.copy(
+                        recentLocations = locationMapper.map(recentLocations).filter { location ->
+                            location.id !in state.savedLocations.map { saved -> saved.id }
+                        }
+                    )
                 }
+            }
         }
     }
 
     private fun loadCurrentPreferredModes() {
         viewModelScope.launch {
-            prefsProvider.collectPreferredTransportModes().collectLatest {
-                uiState.filtersUiState.preferredModes.value = it
+            prefsProvider.collectPreferredTransportModes().collectLatest { modes ->
+                _uiState.update { state ->
+                    state.copy(
+                        filtersUiState = state.filtersUiState.copy(
+                            preferredModes = modes
+                        )
+                    )
+                }
             }
         }
     }
 
     private fun initSearchObservers() {
-        originSearchJob = viewModelScope.launch {
-            uiState.originSearch.collectLatest {
-                if (it.length >= MIN_LENGTH_FOR_SEARCH) queryLocations(it, ORIGIN)
+        viewModelScope.launch {
+            _uiState.map { it.originSearch }.distinctCollectLatest { originSearch ->
+                if (originSearch.length >= MIN_LENGTH_FOR_SEARCH)
+                    queryLocations(originSearch, ORIGIN)
             }
         }
-        originSearchJob.start()
-        destSearchJob = viewModelScope.launch {
-            uiState.destSearch.collectLatest {
-                if (it.length >= MIN_LENGTH_FOR_SEARCH) queryLocations(it, DESTINATION)
+        viewModelScope.launch {
+            _uiState.map { it.destSearch }.distinctCollectLatest { destSearch ->
+                if (destSearch.length >= MIN_LENGTH_FOR_SEARCH) queryLocations(
+                    destSearch,
+                    DESTINATION
+                )
             }
         }
-        destSearchJob.start()
     }
 
     private fun queryLocations(
@@ -136,16 +149,24 @@ constructor(
             val result = queryLocationByTextUseCase(query)
             when (currentSearchType) {
                 ORIGIN -> {
-                    uiState.originSearchRes.value = result.map { pagingData ->
-                        pagingData.map {
-                            locationMapper.map(it)
-                        }
+                    _uiState.update {
+                        it.copy(
+                            originSearchRes = result.map { pagingData ->
+                                pagingData.map {
+                                    locationMapper.map(it)
+                                }
+                            }
+                        )
                     }
                 }
 
                 DESTINATION -> {
-                    uiState.destSearchRes.value = result.map { pagingData ->
-                        pagingData.map { locationMapper.map(it) }
+                    _uiState.update {
+                        it.copy(
+                            destSearchRes = result.map { pagingData ->
+                                pagingData.map { locationMapper.map(it) }
+                            }
+                        )
                     }
                 }
             }
@@ -167,14 +188,14 @@ constructor(
             is LocationSelected -> setSelectedLocation(event.location)
             is OriginSearchChanged -> updateOriginSearch(event.query)
             is DestSearchChanged -> updateDestSearch(event.query)
-            LocationSearchUiEvent.NavigateToResults -> uiState.isSelectionComplete.value = false
+            LocationSearchUiEvent.NavigateToResults -> _uiState.update { it.copy(isSelectionComplete = false) }
             is OriginFocusChanged -> {
-                uiState.requestOriginFocus.value = false
+                _uiState.update { it.copy(requestOriginFocus = false) }
                 setCurrentSearchType(isOrigin = event.hasFocus)
             }
 
             is DestFocusChanged -> {
-                uiState.requestDestFocus.value = false
+                _uiState.update { it.copy(requestDestFocus = false) }
                 setCurrentSearchType(isOrigin = event.hasFocus.not())
             }
 
@@ -182,7 +203,7 @@ constructor(
                 saveCurrentLocation(name = event.name, latitude = event.lat, longitude = event.lon)
 
             is LocationSearchUiEvent.RequestLocation ->
-                uiState.currentLocationRequest.value = event.currentLocation
+                _uiState.update { it.copy(currentLocationRequest = event.currentLocation) }
 
             is LocationSearchUiEvent.SaveLocation -> saveLocation(event.location)
             is LocationSearchUiEvent.DeleteLocation -> deleteLocation(event.id)
@@ -198,9 +219,15 @@ constructor(
                 setIsDepartureFilter(isDeparture = filterUiEvent.isDepart)
 
             is JourneyFilterUiEvent.OnTimeChanged -> setTimeFilter(filterUiEvent.date)
-            is JourneyFilterUiEvent.OnModesChanged -> {}
+            is JourneyFilterUiEvent.OnModesChanged -> updatePreferredModes(filterUiEvent.modes)
         }
 
+    }
+
+    private fun updatePreferredModes(modes: List<TransportMode>) {
+        viewModelScope.launch {
+            prefsProvider.setPreferredTransportModes(modes)
+        }
     }
 
     private fun deleteLocation(id: String) {
@@ -212,83 +239,111 @@ constructor(
     }
 
     private fun updateOriginSearch(query: String) {
-        uiState.originSelected.value = null
-        uiState.originSearch.value = query
+        _uiState.update {
+            it.copy(
+                originSelected = null,
+                originSearch = query,
+            )
+        }
     }
 
     private fun updateDestSearch(query: String) {
-        uiState.destSelected.value = null
-        uiState.destSearch.value = query
+        _uiState.update {
+            it.copy(
+                destSelected = null,
+                destSearch = query,
+            )
+        }
     }
 
     private fun setDateFilter(newDate: Date) {
-        uiState.filtersUiState.filters.value = with(uiState.filtersUiState.filters.value) {
-            copy(
-                date = this.date.setDateOnly(newDate),
+        _uiState.update { state ->
+            state.copy(
+                filtersUiState = state.filtersUiState.copy(
+                    filters = state.filtersUiState.filters.copy(
+                        date = state.filtersUiState.filters.date.setDateOnly(newDate)
+                    )
+                )
             )
         }
     }
 
     private fun setTimeFilter(newTime: Date) {
-        uiState.filtersUiState.filters.value = with(uiState.filtersUiState.filters.value) {
-            copy(
-                date = this.date.setHourMinute(newTime),
+        _uiState.update { state ->
+            state.copy(
+                filtersUiState = state.filtersUiState.copy(
+                    filters = state.filtersUiState.filters.copy(
+                        date = state.filtersUiState.filters.date.setHourMinute(newTime)
+                    )
+                )
             )
         }
     }
 
     private fun setIsDepartureFilter(isDeparture: Boolean) {
-        uiState.filtersUiState.filters.value = uiState.filtersUiState.filters.value.copy(
-            isDepartureFilters = isDeparture
-        )
+        _uiState.update { state ->
+            state.copy(
+                filtersUiState = state.filtersUiState.copy(
+                    filters = state.filtersUiState.filters.copy(
+                        isDepartureFilters = isDeparture
+                    )
+                )
+            )
+        }
     }
 
     private fun swapLocations() {
-        uiState.originSelected.value = uiState.destSelected.value.also {
-            uiState.destSelected.value = uiState.originSelected.value
+        _uiState.update { state ->
+            state.copy(
+                originSelected = state.destSelected,
+                destSelected = state.originSelected,
+                requestDestFocus = state.originSelected.isNull,
+                requestOriginFocus = state.destSelected.isNull,
+            )
         }
-        uiState.originSearch.value = uiState.destSearch.value.also {
-            uiState.destSearch.value = uiState.originSearch.value
-        }
-        if (uiState.originSelected.value != null)
-            uiState.requestDestFocus.value = true
-        else
-            uiState.requestOriginFocus.value = true
     }
 
     private fun setCurrentSearchType(isOrigin: Boolean) {
         if (isOrigin)
-            uiState.currentSearchType.value = ORIGIN
+            _uiState.update { it.copy(currentSearchType = ORIGIN) }
         else
-            uiState.currentSearchType.value = DESTINATION
+            _uiState.update { it.copy(currentSearchType = DESTINATION) }
     }
 
     private fun clearOrigin() {
-        uiState.originSearch.value = ""
-        uiState.originSelected.value = null
-        uiState.requestOriginFocus.value = true
+        _uiState.update {
+            it.copy(
+                originSearch = "",
+                originSelected = null,
+                requestOriginFocus = true,
+            )
+        }
     }
 
     private fun clearDestination() {
-        uiState.destSearch.value = ""
-        uiState.destSelected.value = null
-        uiState.requestDestFocus.value = true
+        _uiState.update {
+            it.copy(
+                destSearch = "",
+                destSelected = null,
+                requestDestFocus = true,
+            )
+        }
     }
 
     private fun setSelectedLocation(
         location: Location,
     ) {
-        when (uiState.currentSearchType.value) {
+        when (_uiState.value.currentSearchType) {
             ORIGIN -> {
-                uiState.originSelected.value = location
-                if (uiState.destSelected.value.isNull)
-                    uiState.requestDestFocus.value = true
+                _uiState.update { it.copy(originSelected = location) }
+                if (_uiState.value.destSelected.isNull)
+                    _uiState.update { it.copy(requestDestFocus = true) }
             }
 
             DESTINATION -> {
-                uiState.destSelected.value = location
-                if (uiState.originSelected.value.isNull)
-                    uiState.requestOriginFocus.value = true
+                _uiState.update { it.copy(destSelected = location) }
+                if (_uiState.value.originSelected.isNull)
+                    _uiState.update { it.copy(requestOriginFocus = true) }
             }
         }
         saveRecentLocation(location)
@@ -302,27 +357,27 @@ constructor(
     }
 
     private fun updateQueryParams() {
-        uiState.originSelected.value?.let {
+        _uiState.value.originSelected?.let {
             queryJourneysParams = queryJourneysParams.copy(
                 originGid = it.id,
                 originName = it.name,
                 originLatitude = it.lat,
                 originLongitude = it.lon,
                 originType = it.type.asJourneyParamsType(),
-                transportModes = uiState.filtersUiState.preferredModes.value + TransportMode.walk,
+                transportModes = _uiState.value.filtersUiState.preferredModes + TransportMode.walk,
             )
         }
-        uiState.destSelected.value?.let {
+        _uiState.value.destSelected?.let {
             queryJourneysParams = queryJourneysParams.copy(
                 destinationGid = it.id,
                 destinationName = it.name,
                 destinationLatitude = it.lat,
                 destinationLongitude = it.lon,
                 destinationType = it.type.asJourneyParamsType(),
-                transportModes = uiState.filtersUiState.preferredModes.value + TransportMode.walk,
+                transportModes = _uiState.value.filtersUiState.preferredModes + TransportMode.walk,
             )
         }
-        uiState.filtersUiState.filters.value.let {
+        _uiState.value.filtersUiState.filters.let {
             queryJourneysParams = queryJourneysParams.copy(
                 dateTime = it.date.rfc3339(),
                 dateTimeRelatesTo = if (it.isDepartureFilters) DEPARTURE else ARRIVAL,
@@ -332,7 +387,7 @@ constructor(
     }
 
     private fun verifySelectionIsComplete() {
-        safeLet(uiState.originSelected.value, uiState.destSelected.value) { origin, dest ->
+        safeLet(_uiState.value.originSelected, _uiState.value.destSelected) { origin, dest ->
             saveRecentJourneySearch(origin, dest)
             finishLocationSelection()
         }
@@ -353,7 +408,7 @@ constructor(
     private fun finishLocationSelection() {
         viewModelScope.launch {
             saveCurrentJourneyQueryUseCase(queryJourneysParams)
-            uiState.isSelectionComplete.value = true
+            _uiState.update { it.copy(isSelectionComplete = true) }
         }
     }
 
@@ -365,37 +420,47 @@ constructor(
             lon = longitude,
             type = LocationType.gps,
         )
-        when (uiState.currentSearchType.value) {
+        when (uiState.value.currentSearchType) {
             ORIGIN -> {
-                if (uiState.destSelected.value.isNull) {
-                    uiState.requestDestFocus.value = true
+                if (_uiState.value.destSelected.isNull) {
+                    _uiState.update { it.copy(requestDestFocus = true) }
                 }
-                if (uiState.destSelected.value?.type == LocationType.gps) {
-                    uiState.destSelected.value = null
-                    uiState.requestDestFocus.value = true
+                if (_uiState.value.destSelected?.type == LocationType.gps) {
+                    _uiState.update { it.copy(
+                        destSelected = null,
+                        requestDestFocus = true,
+                    ) }
                 }
-                uiState.originSelected.value = location
+                _uiState.update { it.copy(originSelected = location) }
             }
 
             DESTINATION -> {
-                if (uiState.originSelected.value.isNull) {
-                    uiState.requestOriginFocus.value = true
+                if (_uiState.value.originSelected.isNull) {
+                    _uiState.update { it.copy(requestOriginFocus = true) }
                 }
-                if (uiState.originSelected.value?.type == LocationType.gps) {
-                    uiState.originSelected.value = null
-                    uiState.requestOriginFocus.value = true
+                if (uiState.value.originSelected?.type == LocationType.gps) {
+                    _uiState.update { it.copy(
+                        originSelected = null,
+                        requestOriginFocus = true,
+                    ) }
                 }
-                uiState.destSelected.value = location
+                _uiState.update { it.copy(destSelected = location) }
             }
         }
         updateQueryParams()
     }
 
     private fun updateFilters(queryParams: QueryJourneysParams) {
-        uiState.filtersUiState.filters.value = JourneyFilters(
-            date = queryParams.dateTime?.parseRfc3339() ?: Date(),
-            isDepartureFilters = queryParams.dateTimeRelatesTo == DEPARTURE,
-        )
+        _uiState.update {
+            it.copy(
+                filtersUiState = it.filtersUiState.copy(
+                    filters = it.filtersUiState.filters.copy(
+                        date = queryParams.dateTime?.parseRfc3339() ?: Date(),
+                        isDepartureFilters = queryParams.dateTimeRelatesTo == DEPARTURE,
+                    )
+                )
+            )
+        }
     }
 
     fun verifyQueryFilters() {

@@ -11,28 +11,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.mazarini.resa.global.fake.FakeFactory
-import com.mazarini.resa.ui.commoncomponents.LocationName
+import com.mazarini.resa.ui.model.Location
 import com.mazarini.resa.ui.screens.departures.state.DeparturesUiEvent
-import com.mazarini.resa.ui.screens.departures.state.DeparturesUiState
+import com.mazarini.resa.ui.screens.locationsearch.components.LocationName
 import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.Previews
 
 @Composable
 fun StopQueryResultList(
-    uiState: DeparturesUiState,
+    stopQueryResult: List<Location>,
+    stopQuery: String,
     onEvent: (DeparturesUiEvent) -> Unit,
 ) {
-    val stopQueryResult by remember { uiState.stopQueryResult }
-    val stopQuery = uiState.stopQuery.collectAsState().value
 
     LazyColumn(
         modifier = Modifier.padding(top = 8.dp)
@@ -68,9 +63,8 @@ fun StopQueryResultList(
 fun StopQueryResultListPreview() {
     ResaTheme {
         StopQueryResultList(
-            uiState = DeparturesUiState(
-                stopQueryResult = mutableStateOf(FakeFactory.locationList()),
-            ),
+            stopQueryResult = FakeFactory.locationList(),
+            stopQuery = "Test",
             onEvent = {},
         )
     }

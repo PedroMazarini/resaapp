@@ -10,13 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -57,9 +56,9 @@ fun SearchFields(
 ) {
     val originSearch by getOriginSearchText(uiState)
     val destSearch by getDestSearchText(uiState)
-    val originFocusRequest by uiState.requestOriginFocus
-    val destFocusRequest by uiState.requestDestFocus
-    val locationRequest by uiState.currentLocationRequest
+    val originFocusRequest = uiState.requestOriginFocus
+    val destFocusRequest = uiState.requestDestFocus
+    val locationRequest = uiState.currentLocationRequest
     val originFocusRequester = remember { FocusRequester() }
     val destFocusRequester = remember { FocusRequester() }
     val customTextSelectionColors = TextSelectionColors(
@@ -108,7 +107,7 @@ fun SearchFields(
             onFocusChanged = { onEvent(DestFocusChanged(it)) },
         )
 
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
             color = MTheme.colors.graph.minimal,
             thickness = 1.dp,
@@ -119,10 +118,10 @@ fun SearchFields(
                 .clickable {
                     onEvent(LocationSearchUiEvent.RequestLocation(CurrentLocation.Request))
                 },
-            uiState = uiState,
+            currentLocation = uiState.currentLocationRequest,
         )
 
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
             color = MTheme.colors.graph.minimal,
             thickness = 1.dp,
@@ -162,11 +161,13 @@ fun RequestLocationPermission(onEvent: (LocationSearchUiEvent) -> Unit) {
             is LocationAction.OnSuccess -> {
                 onEvent(
                     LocationSearchUiEvent.LocationResult(
-                    name = myLocationName,
-                    lat = it.lat,
-                    lon = it.lon,
-                ))
+                        name = myLocationName,
+                        lat = it.lat,
+                        lon = it.lon,
+                    )
+                )
             }
+
             else -> {
                 locationFailed.show()
             }
@@ -176,16 +177,14 @@ fun RequestLocationPermission(onEvent: (LocationSearchUiEvent) -> Unit) {
 
 @Composable
 fun getOriginSearchText(uiState: LocationSearchUiState): State<String> {
-    val originSearch by uiState.originSearch.collectAsState()
-    val origin by uiState.originSelected.collectAsState()
     val currentText = stringResource(id = R.string.my_location)
-    return remember {
+    return remember(uiState.originSearch, uiState.originSelected, currentText) {
         derivedStateOf {
-            val selected = origin
+            val selected = uiState.originSelected
             when {
                 selected?.type == LocationType.gps -> currentText
                 selected != null -> selected.name
-                else -> originSearch
+                else -> uiState.originSearch
             }
         }
     }
@@ -193,16 +192,14 @@ fun getOriginSearchText(uiState: LocationSearchUiState): State<String> {
 
 @Composable
 fun getDestSearchText(uiState: LocationSearchUiState): State<String> {
-    val destSearch by uiState.destSearch.collectAsState()
-    val dest by uiState.destSelected.collectAsState()
     val currentText = stringResource(id = R.string.my_location)
-    return remember {
+    return remember(uiState.destSearch, uiState.destSelected, currentText) {
         derivedStateOf {
-            val selected = dest
+            val selected = uiState.destSelected
             when {
                 selected?.type == LocationType.gps -> currentText
                 selected != null -> selected.name
-                else -> destSearch
+                else -> uiState.destSearch
             }
         }
     }
@@ -210,13 +207,13 @@ fun getDestSearchText(uiState: LocationSearchUiState): State<String> {
 
 @Composable
 fun getOriginTextStyle(uiState: LocationSearchUiState): TextStyle {
-    val selected by uiState.originSelected.collectAsState()
+    val selected = uiState.originSelected
     return getTextFieldStyle(selected.isNotNull)
 }
 
 @Composable
 fun getDestTextStyle(uiState: LocationSearchUiState): TextStyle {
-    val selected by uiState.originSelected.collectAsState()
+    val selected = uiState.originSelected
     return getTextFieldStyle(selected.isNotNull)
 }
 

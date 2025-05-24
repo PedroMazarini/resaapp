@@ -58,7 +58,7 @@ fun WholeDeviceShape(
             border = BorderStroke(8.dp, MTheme.colors.primary),
         ) {
             Column {
-                content(modifier = Modifier)
+                content(Modifier)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -108,9 +108,7 @@ fun HalfDeviceShape(
             colors = Color.White.asCardBackground(),
             border = BorderStroke(10.dp, MTheme.colors.primary),
         ) {
-            content(
-                modifier = Modifier.fillMaxWidth()
-            )
+            content(Modifier.fillMaxWidth())
         }
         Box(
             modifier = Modifier

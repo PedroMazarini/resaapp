@@ -72,7 +72,7 @@ fun WalkOnlyJourneyPreview() {
         WalkOnlyJourney(
             modifier = Modifier,
             leg = FakeFactory.leg(mode = TransportMode.walk),
-            onEvent = { }
+            onEvent = { },
         )
     }
 }

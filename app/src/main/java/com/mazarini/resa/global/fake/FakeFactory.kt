@@ -13,6 +13,9 @@ import com.mazarini.resa.domain.model.journey.LegColors
 import com.mazarini.resa.domain.model.journey.LegDetails
 import com.mazarini.resa.domain.model.journey.LegStop
 import com.mazarini.resa.domain.model.journey.LegType
+import com.mazarini.resa.domain.model.Location as DomainLocation
+import com.mazarini.resa.domain.model.LocationType as DomainLocationType
+
 import com.mazarini.resa.domain.model.journey.OccupancyLevel
 import com.mazarini.resa.domain.model.journey.Platform
 import com.mazarini.resa.domain.model.journey.Warning
@@ -39,6 +42,32 @@ object FakeFactory {
             )
         }
         return result.toList()
+    }
+
+    fun location(
+        id: String = UUID.randomUUID().toString(),
+        name: String = "Liseberg",
+        type: LocationType = LocationType.stoparea,
+    ): Location {
+        return Location(
+            id = id,
+            name = name,
+            type = type,
+        )
+    }
+
+    fun domainLocation(
+        id: String = UUID.randomUUID().toString(),
+        name: String = "Liseberg",
+        type: DomainLocationType = DomainLocationType.stoparea,
+    ): DomainLocation {
+        return DomainLocation(
+            id = id,
+            name = name,
+            type = type,
+            lat = 0.0,
+            lon = 0.0,
+        )
     }
 
     fun legList(count: Int = 10): List<Leg> {

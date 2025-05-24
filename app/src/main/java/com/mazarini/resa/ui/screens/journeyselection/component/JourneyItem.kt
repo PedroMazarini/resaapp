@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.mazarini.resa.domain.model.TransportMode
 import com.mazarini.resa.global.fake.FakeFactory
@@ -30,6 +31,7 @@ fun JourneyItem(
         modifier = modifier
             .padding(top = 16.dp)
             .fillMaxWidth()
+            .testTag("JourneyItem_${journey.id}")
             .clickable { onJourneyClicked(journey.id) },
     ) {
         if (journey.isOnlyWalk().not()) {
@@ -68,7 +70,7 @@ fun JourneyItem(
     }
 }
 
-fun Journey.isOnlyWalk(): Boolean =
+private fun Journey.isOnlyWalk(): Boolean =
     legs.size == 1 && legs.first().transportMode == TransportMode.walk
 
 @Composable

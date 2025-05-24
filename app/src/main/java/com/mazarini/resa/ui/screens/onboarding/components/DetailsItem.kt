@@ -26,7 +26,8 @@ fun DetailsItem(
     modifier: Modifier = Modifier,
 ) {
     val titleBaseStyle = MTheme.type.highlightTitle.fontSize(34.sp).toSpanStyle()
-    val titlePatternStyle = MTheme.type.highlightTitle.fontSize(34.sp).color(MTheme.colors.primary).toSpanStyle()
+    val titlePatternStyle =
+        MTheme.type.highlightTitle.fontSize(34.sp).color(MTheme.colors.primary).toSpanStyle()
 
     Column(
         modifier = modifier
@@ -35,8 +36,7 @@ fun DetailsItem(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            modifier = Modifier,
-            text = getFormattedString(
+            modifier = Modifier, text = getFormattedString(
                 resId = R.string.details_title,
                 baseStyle = titleBaseStyle,
                 patternStyle = titlePatternStyle,

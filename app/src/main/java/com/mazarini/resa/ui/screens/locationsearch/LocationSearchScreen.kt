@@ -1,6 +1,7 @@
 package com.mazarini.resa.ui.screens.locationsearch
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -14,36 +15,46 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.mazarini.resa.R
 import com.mazarini.resa.global.extensions.isNotNull
-import com.mazarini.resa.global.extensions.toggle
 import com.mazarini.resa.global.fake.FakeFactory
-import com.mazarini.resa.ui.commoncomponents.LocationItem
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.FiltersTopBar
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.JourneyFilter
 import com.mazarini.resa.ui.commoncomponents.journeySearchFilters.getFilterDetailText
 import com.mazarini.resa.ui.commoncomponents.loading.LinearLoading
 import com.mazarini.resa.ui.model.Location
 import com.mazarini.resa.ui.navigation.Route
+import com.mazarini.resa.ui.screens.locationsearch.components.LocationItem
 import com.mazarini.resa.ui.screens.locationsearch.components.searchFields.SearchFields
 import com.mazarini.resa.ui.screens.locationsearch.state.CurrentSearchType
 import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent
-import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.*
+import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.DeleteLocation
+import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.FilterEvent
+import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.LocationSelected
+import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.NavigateToResults
+import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiEvent.SaveLocation
 import com.mazarini.resa.ui.screens.locationsearch.state.LocationSearchUiState
 import com.mazarini.resa.ui.screens.locationsearch.state.MIN_LENGTH_FOR_SEARCH
 import com.mazarini.resa.ui.theme.MTheme
@@ -51,6 +62,7 @@ import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.fontSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
@@ -59,20 +71,24 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun LocationSearchScreen(
-    uiState: LocationSearchUiState,
+    locationSearchUiState: StateFlow<LocationSearchUiState>,
     onEvent: (LocationSearchUiEvent) -> Unit,
     navigateTo: (route: Route) -> Unit = {},
     upPress: () -> Unit = {},
 ) {
 
-    val isSelectionComplete by uiState.isSelectionComplete.collectAsState()
+    val uiState by locationSearchUiState.collectAsStateWithLifecycle()
+    val isComplete by remember {
+        derivedStateOf { uiState.isSelectionComplete }
+    }
+    var wasComplete by remember { mutableStateOf(false) }
     val filtersUiState = uiState.filtersUiState
-    val savedLocations by uiState.savedLocations
-    val recentLocations by uiState.recentLocations
+    val savedLocations = uiState.savedLocations
+    val recentLocations = uiState.recentLocations
     val searchResults = fetchSearchResults(uiState)
     val currentSearchText by fetchCurrentSearchText(uiState)
     val shouldShowResults = shouldShowResults(uiState = uiState, currentSearchText)
-    val showFilters = remember { mutableStateOf(false) }
+    var showFilters by remember { mutableStateOf(false) }
 
     /** States */
     val modalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -91,7 +107,7 @@ fun LocationSearchScreen(
             stickyHeader {
                 FiltersTopBar(
                     iconId = R.drawable.ic_back,
-                    filterDetail = getFilterDetailText(filtersUiState.filters.value),
+                    filterDetail = getFilterDetailText(filtersUiState.filters),
                     onIconClicked = {
                         handleBackPress(
                             sheetState = modalSheetState,
@@ -100,7 +116,7 @@ fun LocationSearchScreen(
                         )
                     },
                 ) {
-                    showFilters.toggle()
+                    showFilters = !showFilters
                 }
                 SearchFields(
                     uiState = uiState,
@@ -170,7 +186,7 @@ fun LocationSearchScreen(
         }
     }
 
-    if (showFilters.value) {
+    if (showFilters) {
         ModalBottomSheet(
             modifier = Modifier,
             shape = RoundedCornerShape(topEnd = 12.dp, topStart = 12.dp),
@@ -178,7 +194,7 @@ fun LocationSearchScreen(
             scrimColor = MTheme.colors.surfaceBlur,
             dragHandle = null,
             tonalElevation = 8.dp,
-            onDismissRequest = { showFilters.value = false }
+            onDismissRequest = { showFilters = false }
         ) {
             JourneyFilter(
                 uiState = filtersUiState,
@@ -186,15 +202,18 @@ fun LocationSearchScreen(
                 dismissFilters = {
                     scope.launch {
                         modalSheetState.hide()
-                        showFilters.value = false
+                        showFilters = false
                     }
                 },
             )
         }
     }
-    if (isSelectionComplete) {
-        onEvent(NavigateToResults)
-        navigateTo(Route.JourneySelection)
+    LaunchedEffect(isComplete) {
+        if (isComplete && !wasComplete) {
+            onEvent(NavigateToResults)
+            navigateTo(Route.JourneySelection)
+        }
+        wasComplete = isComplete
     }
 }
 
@@ -237,9 +256,9 @@ fun handleBackPress(sheetState: SheetState, upPress: () -> Unit, scope: Coroutin
 
 @Composable
 fun fetchSearchResults(uiState: LocationSearchUiState): LazyPagingItems<Location> {
-    val currentSearchType by uiState.currentSearchType.collectAsState()
-    val originSearchRes = uiState.originSearchRes.value.collectAsLazyPagingItems()
-    val destSearchRes = uiState.destSearchRes.value.collectAsLazyPagingItems()
+    val currentSearchType = uiState.currentSearchType
+    val originSearchRes = uiState.originSearchRes.collectAsLazyPagingItems()
+    val destSearchRes = uiState.destSearchRes.collectAsLazyPagingItems()
 
     return when (currentSearchType) {
         CurrentSearchType.ORIGIN -> originSearchRes
@@ -249,13 +268,19 @@ fun fetchSearchResults(uiState: LocationSearchUiState): LazyPagingItems<Location
 
 @Composable
 fun fetchCurrentSearchText(uiState: LocationSearchUiState): State<String> {
-    val currentSearchType by uiState.currentSearchType.collectAsState()
-    val originSelected by uiState.originSelected.collectAsState()
-    val destSelected by uiState.destSelected.collectAsState()
-    val originSearch by uiState.originSearch.collectAsState()
-    val destSearch by uiState.destSearch.collectAsState()
+    val currentSearchType = uiState.currentSearchType
+    val originSelected = uiState.originSelected
+    val destSelected = uiState.destSelected
+    val originSearch = uiState.originSearch
+    val destSearch = uiState.destSearch
 
-    return remember {
+    return remember(
+        currentSearchType,
+        originSelected,
+        destSelected,
+        originSearch,
+        destSearch
+    ) {
         derivedStateOf {
             when (currentSearchType) {
                 CurrentSearchType.ORIGIN -> {
@@ -270,14 +295,15 @@ fun fetchCurrentSearchText(uiState: LocationSearchUiState): State<String> {
     }
 }
 
+
 @Composable
 fun shouldShowResults(
     uiState: LocationSearchUiState,
     currentSearchText: String,
 ): Boolean {
-    val currentSearchType by uiState.currentSearchType.collectAsState()
-    val originSelected by uiState.originSelected.collectAsState()
-    val destSelected by uiState.destSelected.collectAsState()
+    val currentSearchType = uiState.currentSearchType
+    val originSelected = uiState.originSelected
+    val destSelected = uiState.destSelected
 
     return currentSearchText.length >= MIN_LENGTH_FOR_SEARCH
             &&
@@ -287,22 +313,6 @@ fun shouldShowResults(
             }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun getBottomSheetState() =
-    SheetState(
-        skipPartiallyExpanded = false,
-        density = LocalDensity.current,
-    )
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun getBottomSheetScaffoldState(sheetState: SheetState) =
-    rememberBottomSheetScaffoldState(
-        bottomSheetState = sheetState,
-    )
-
 @SuppressLint("UnrememberedMutableState")
 @Composable
 @Preview
@@ -310,9 +320,11 @@ fun LocationSearchPreview() {
     val fakeFavoriteList = FakeFactory.locationList()
     ResaTheme {
         LocationSearchScreen(
-            uiState = LocationSearchUiState(
-                originSearchRes = mutableStateOf(flowOf(PagingData.from(fakeFavoriteList))),
-                originSearch = MutableStateFlow("abc"),
+            locationSearchUiState = MutableStateFlow(
+                LocationSearchUiState(
+                    originSearchRes = flowOf(PagingData.from(fakeFavoriteList)),
+                    originSearch = "abc",
+                )
             ),
             onEvent = {},
             navigateTo = {},

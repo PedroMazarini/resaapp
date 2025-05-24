@@ -5,14 +5,12 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mazarini.resa.R
 import com.mazarini.resa.domain.model.Coordinate
 import com.mazarini.resa.global.fake.FakeFactory
@@ -29,17 +27,16 @@ import com.mazarini.resa.ui.screens.departures.state.DeparturesUiEvent
 import com.mazarini.resa.ui.screens.departures.state.DeparturesUiState
 import com.mazarini.resa.ui.screens.locationsearch.state.CurrentLocation
 import com.mazarini.resa.ui.theme.ResaTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun DeparturesScreen(
-    uiState: DeparturesUiState,
+    departuresUiState: StateFlow<DeparturesUiState>,
     onEvent: (DeparturesUiEvent) -> Unit,
     navigateTo: (route: Route) -> Unit,
 ) {
-    val locationRequest by remember { uiState.userLocationRequest }
-    val isLoading by remember { uiState.isLoading }
-    val selectedStop by uiState.selectedStop.collectAsState()
-    val showStopQueryResult by remember { uiState.showStopQueryResult }
+    val uiState by departuresUiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopBar(
@@ -53,20 +50,24 @@ fun DeparturesScreen(
 
         RecentStopChipList(uiState = uiState, onEvent = onEvent)
 
-        if (isLoading) {
+        if (uiState.isLoading) {
             LoadingStops()
         } else {
-            selectedStop?.let {
-                DeparturesResultList(uiState = uiState, onEvent = onEvent)
+            uiState.selectedStop?.let {
+                DeparturesResultList(departures = uiState.departures, onEvent = onEvent)
             } ?: run {
-                if (showStopQueryResult) {
-                    StopQueryResultList(uiState, onEvent)
+                if (uiState.showStopQueryResult) {
+                    StopQueryResultList(
+                        stopQuery = uiState.stopQuery,
+                        stopQueryResult = uiState.stopQueryResult,
+                        onEvent = onEvent
+                    )
                 }
             }
         }
     }
 
-    if (locationRequest is CurrentLocation.Request) {
+    if (uiState.userLocationRequest is CurrentLocation.Request) {
         onEvent(DeparturesUiEvent.UserLocationRequest(CurrentLocation.Loading))
         RequestLocationPermission(onEvent)
     }
@@ -91,9 +92,11 @@ private fun RequestLocationPermission(onEvent: (DeparturesUiEvent) -> Unit) {
                     )
                 )
             }
+
             is LocationAction.OnPermissionRequested -> {
                 onEvent(DeparturesUiEvent.LocationRequestOngoing)
             }
+
             else -> {
                 locationFailed.show()
                 onEvent(DeparturesUiEvent.LocationRequestOngoing)
@@ -108,8 +111,10 @@ private fun RequestLocationPermission(onEvent: (DeparturesUiEvent) -> Unit) {
 fun DeparturesScreenPreview() {
     ResaTheme {
         DeparturesScreen(
-            uiState = DeparturesUiState(
-                stopQueryResult = mutableStateOf(FakeFactory.locationList())
+            departuresUiState = MutableStateFlow(
+                DeparturesUiState(
+                    stopQueryResult = FakeFactory.locationList()
+                )
             ),
             onEvent = {},
             navigateTo = {},

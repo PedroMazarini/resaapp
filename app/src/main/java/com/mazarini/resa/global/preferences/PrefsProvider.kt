@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.mazarini.resa.domain.model.ApiToken
 import com.mazarini.resa.domain.model.TransportMode
 import com.mazarini.resa.domain.model.journey.Journey
 import com.mazarini.resa.global.extensions.ifEmpty
@@ -24,27 +25,11 @@ import javax.inject.Singleton
 class PrefsProvider
 @Inject
 constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
-
-    suspend fun getToken() = context.datastore.getString(VASTTRAFIK_TOKEN) ?: ""
-    suspend fun setToken(token: String) {
-        context.datastore.putString(VASTTRAFIK_TOKEN, token)
-    }
-
-    suspend fun getTokenExpire() = context.datastore.getLong(VASTTRAFIK_TOKEN_EXPIRE)
-    suspend fun setTokenExpire(timestamp: Long) {
-        context.datastore.putLong(VASTTRAFIK_TOKEN_EXPIRE, timestamp)
-    }
-
     suspend fun getCurrentJourneysQuery() = context.datastore.getString(CURRENT_JOURNEYS_QUERY)
     suspend fun setCurrentJourneysQuery(query: String) {
         context.datastore.putString(CURRENT_JOURNEYS_QUERY, query)
-    }
-
-    suspend fun getSavedJourneysQuery() = context.datastore.getString(SAVED_JOURNEYS_QUERY)
-    suspend fun setSavedJourneysQuery(query: String) {
-        context.datastore.putString(SAVED_JOURNEYS_QUERY, query)
     }
 
     suspend fun getThemeSettings() = context.datastore.getString(THEME_SETTINGS)?.let {
@@ -62,6 +47,7 @@ constructor(
         val savedModes = context.datastore.getEnumList(PREFERRED_TRANSPORT_MODES, TransportMode::class.java)
         if (savedModes.isEmpty()) {
             setPreferredTransportModes(TransportMode.selectableModes())
+            return TransportMode.selectableModes()
         }
         return savedModes
     }
@@ -75,13 +61,18 @@ constructor(
         context.datastore.setEnumList(PREFERRED_TRANSPORT_MODES, preferred)
     }
 
+    suspend fun getToken(): ApiToken = context.customDataStore.data.first().token
+    suspend fun setToken(token: ApiToken) {
+        context.customDataStore.updateData { currentPrefs -> currentPrefs.copy(token = token) }
+    }
+
     suspend fun getPreferredDeparture(): PreferredStop? {
-        return context.customDataStore.data.first()?.preferredStop
+        return context.customDataStore.data.first().preferredStop
     }
 
     suspend fun setPreferredDeparture(preferredStop: PreferredStop?) {
         context.customDataStore.updateData { currentPrefs ->
-            currentPrefs?.copy(preferredStop = preferredStop) ?: UserPreferences(preferredStop = preferredStop)
+            currentPrefs.copy(preferredStop = preferredStop)
         }
     }
 
@@ -101,16 +92,16 @@ constructor(
 
     suspend fun setSeenOnboarding() {
         context.customDataStore.updateData { currentPrefs ->
-            currentPrefs?.copy(hasSeenOnboarding = true) ?: UserPreferences(hasSeenOnboarding = true)
+            currentPrefs.copy(hasSeenOnboarding = true)
         }
     }
 
     suspend fun getLanguage(): String? {
-        return context.customDataStore.data.first()?.language
+        return context.customDataStore.data.first().language
     }
 
     suspend fun getUserPrefs(): UserPreferences {
-        return context.customDataStore.data.first() ?: UserPreferences()
+        return context.customDataStore.data.first()
     }
 
     suspend fun setLanguage(language: String) {
@@ -121,7 +112,7 @@ constructor(
 
     suspend fun setSeenSaveQueryFeat() {
         context.customDataStore.updateData { currentPrefs ->
-            currentPrefs?.copy(hasSeenSaveQueryFeat = true) ?: UserPreferences(hasSeenSaveQueryFeat = true)
+            currentPrefs.copy(hasSeenSaveQueryFeat = true)
         }
     }
 
@@ -136,12 +127,9 @@ constructor(
     companion object {
         const val SETTINGS_STORE = "settings_store"
         const val THEME_SETTINGS = "theme_settings"
-        const val VASTTRAFIK_TOKEN = "vasttrafik_token"
-        const val VASTTRAFIK_TOKEN_EXPIRE = "vasttrafik_token_expire"
         const val CURRENT_JOURNEYS_QUERY = "current_journeys_query"
-        const val SAVED_JOURNEYS_QUERY = "saved_journeys_query"
         const val PREFERRED_TRANSPORT_MODES = "preferred_transport_modes"
         private val Context.datastore: DataStore<Preferences> by preferencesDataStore(name = SETTINGS_STORE)
-        private val Context.customDataStore: DataStore<UserPreferences?> by dataStore("custom_user_prefs.json", serializer = UserPreferencesSerializer)
+        private val Context.customDataStore: DataStore<UserPreferences> by dataStore("custom_user_prefs.json", serializer = UserPreferencesSerializer)
     }
 }

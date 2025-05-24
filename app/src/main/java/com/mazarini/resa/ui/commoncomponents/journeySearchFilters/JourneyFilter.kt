@@ -10,11 +10,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,7 +42,7 @@ fun JourneyFilter(
     dismissFilters: () -> Unit,
 ) {
 
-    val filters by remember { uiState.filters }
+    val filters = uiState.filters
     val showModesDialog = remember { mutableStateOf(false) }
 
     Column(
@@ -52,7 +51,7 @@ fun JourneyFilter(
             .background(color = MTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Divider(
+        HorizontalDivider(
             modifier = Modifier
                 .padding(top = 4.dp)
                 .height(4.dp)
@@ -107,7 +106,11 @@ fun JourneyFilter(
     }
     if (showModesDialog.value) {
         TransportModesDialog(
-            onConfirm = { onEvent(JourneyFilterUiEvent.OnModesChanged) },
+            onResult = { modes ->
+                onEvent(JourneyFilterUiEvent.OnModesChanged(modes))
+                showModesDialog.value = false
+                       },
+            preferredModes = uiState.preferredModes,
             onDismiss = { showModesDialog.value = false },
         )
     }
@@ -142,7 +145,7 @@ fun SearchTripFilterDarkPreview() {
 @Preview
 fun SearchTripFilterPreview() {
     ResaTheme {
-        Column() {
+        Column {
             JourneyFilter(
                 uiState = JourneyFilterUiState(),
                 onEvent = {},

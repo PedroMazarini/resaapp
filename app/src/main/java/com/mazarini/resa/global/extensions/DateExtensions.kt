@@ -1,5 +1,6 @@
 package com.mazarini.resa.global.extensions
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.mazarini.resa.R
@@ -9,7 +10,6 @@ import java.util.Date
 
 const val DAY_IN_MILI = 86400000
 const val FIFTY_FOUR_MIN_IN_MILI = 3540000
-//const val RFC_3339 = "yyyy-MM-dd'T'HH:mm:ssXXX"
 const val RFC_3339 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSXXX"
 
 fun Date.plusSec(sec: Int): Date {

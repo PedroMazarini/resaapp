@@ -17,9 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +40,6 @@ import com.mazarini.resa.ui.theme.MTheme
 import com.mazarini.resa.ui.theme.ResaTheme
 import com.mazarini.resa.ui.util.Previews
 import com.mazarini.resa.ui.util.showMessage
-import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.UUID
 
 @Composable
@@ -52,10 +48,8 @@ fun DepartureSearchField(
     uiState: DeparturesUiState,
     onEvent: (DeparturesUiEvent) -> Unit,
 ) {
-    val selectedStop by uiState.selectedStop.collectAsState()
-    val stopQuery = uiState.stopQuery.collectAsState().value
-    val requestFocus by remember { uiState.requestFocus }
-    val isPreferredSelected by remember { uiState.isPreferredSelected }
+    val selectedStop = uiState.selectedStop
+    val isPreferredSelected = uiState.isPreferredSelected
     val searchFocusRequester = remember { FocusRequester() }
     val pinIconRes =
         if (isPreferredSelected) R.drawable.ic_push_pin_filled else R.drawable.ic_push_pin_outline
@@ -71,13 +65,13 @@ fun DepartureSearchField(
                     .height(24.dp),
                 icon = painterResource(id = R.drawable.ic_bus_stop),
                 iconModifier = Modifier.height(22.dp),
-                textContent = selectedStop?.name ?: stopQuery,
+                textContent = selectedStop?.name ?: uiState.stopQuery,
                 placeHolder = R.string.search_stop.stringRes(),
                 textStyle = getTextFieldStyle(uiState.selectedStop.isNotNull),
                 onCloseClicked = {
                     onEvent(DeparturesUiEvent.OnQueryChanged(""))
                     searchFocusRequester.requestFocus()
-                                 },
+                },
                 onTextChanged = { onEvent(DeparturesUiEvent.OnQueryChanged(it)) },
                 focusRequester = searchFocusRequester,
             )
@@ -103,19 +97,20 @@ fun DepartureSearchField(
                     )
                 }
             } ?: run {
-                LocationButton(uiState, onEvent)
+                LocationButton(uiState.userLocationRequest, onEvent)
             }
         }
     }
-    LaunchedEffect(requestFocus) {
-        if (requestFocus) searchFocusRequester.requestFocus()
+    LaunchedEffect(uiState.requestFocus) {
+        if (uiState.requestFocus) searchFocusRequester.requestFocus()
     }
 }
 
 @Composable
-fun RowScope.LocationButton(uiState: DeparturesUiState, onEvent: (DeparturesUiEvent) -> Unit) {
-    val locationRequest by remember { uiState.userLocationRequest }
-
+fun RowScope.LocationButton(
+    locationRequest: CurrentLocation?,
+    onEvent: (DeparturesUiEvent) -> Unit
+) {
     if (locationRequest !is CurrentLocation.Loading) {
         IconButton(
             onClick = { onEvent(DeparturesUiEvent.StartLocationRequest) },
@@ -173,19 +168,15 @@ fun DepartureSearchFieldPreview() {
         DepartureSearchField(
             modifier = Modifier.fillMaxWidth(),
             uiState = DeparturesUiState(
-                selectedStop = MutableStateFlow(
-                    Location(
-                        id = UUID.randomUUID().toString(),
-                        name = "Liseberg",
-                        type = LocationType.values().random()
-                    )
+                selectedStop = Location(
+                    id = UUID.randomUUID().toString(),
+                    name = "Liseberg",
+                    type = LocationType.values().random()
                 ),
-                isPreferredSelected = mutableStateOf(false),
-                preferredStop = MutableStateFlow(
-                    PreferredStop(
-                        gid = UUID.randomUUID().toString(),
-                        name = "Liseberg",
-                    )
+                isPreferredSelected = false,
+                preferredStop = PreferredStop(
+                    gid = UUID.randomUUID().toString(),
+                    name = "Liseberg",
                 ),
             ),
             onEvent = {},

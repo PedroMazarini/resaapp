@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,6 +55,7 @@ fun JourneysTab(
                         .weight(1f)
                         .padding(vertical = 4.dp)
                         .padding(start = 4.dp)
+                        .testTag("JourneysTab_Upcoming")
                         .clickable { onTabChange(true) },
                     colors = getTabBackground(isUpcoming),
                 ) {
@@ -74,6 +76,7 @@ fun JourneysTab(
                         .padding(vertical = 4.dp)
                         .padding(end = 4.dp)
                         .align(Alignment.CenterVertically)
+                        .testTag("JourneysTab_Previous")
                         .clickable { onTabChange(false) },
                     colors = getTabBackground(isUpcoming.not()),
                 ) {

@@ -46,7 +46,7 @@ fun DepartBar(
             .padding(end = 24.dp, start = 22.dp)
             .padding(top = 20.dp, bottom = 16.dp),
     ) {
-        DepartText(depart, now.longValue)
+        DepartText(depart, now)
 
         Column(
             modifier = Modifier

@@ -39,7 +39,6 @@ fun MakeLegStops(
                     title = stop.name,
                     keys = arrayOf(stop.id),
                     state = MarkerState(position = coordinate.toLatLng()),
-                    onClick = { false }, // TODO: Handle click if needed or remove,
                 ) {
                     if (!isLastLeg || index == 0) {
                         StopBoundsMarker(colors)
@@ -52,7 +51,6 @@ fun MakeLegStops(
                     title = stop.name,
                     keys = arrayOf(stop.id),
                     state = MarkerState(position = coordinate.toLatLng()),
-                    onClick = { false }, // TODO: Handle click if needed or remove,
                 ) {
                     StopMarker(colors)
                 }

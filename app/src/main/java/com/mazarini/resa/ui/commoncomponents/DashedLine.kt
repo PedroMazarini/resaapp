@@ -24,9 +24,6 @@ fun DashedLine(
     Canvas(
         modifier = modifier.clipToBounds()
     ) {
-        // Creating various parameters like step distance,
-        // tilt angle, count, size, etc and drawing a straight line
-//        val step = step
         val stepPx = step.toPx()
         val stepsCount = (size.height / stepPx).roundToInt()
         val actualStep = size.height / stepsCount

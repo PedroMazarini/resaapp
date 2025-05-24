@@ -28,7 +28,6 @@ fun TrackingMarker(
         title = bus.directionName,
         keys = arrayOf("id"),
         state = markerState,
-        onClick = { false }, // TODO: Handle click if needed or remove,
     ) {
         TrackingMarkerContent(bus = bus)
     }
