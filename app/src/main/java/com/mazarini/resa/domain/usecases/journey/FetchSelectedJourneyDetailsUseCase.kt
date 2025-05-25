@@ -1,15 +1,18 @@
 package com.mazarini.resa.domain.usecases.journey
 
 import com.mazarini.resa.domain.repositoryAbstraction.JourneysRepository
-import javax.inject.Inject
 
 interface FetchSelectedJourneyDetailsUseCase {
     suspend operator fun invoke()
+
+    companion object Factory
 }
 
-class FetchSelectedJourneyDetailsUseCaseImpl
-@Inject
-constructor(
+fun FetchSelectedJourneyDetailsUseCase.Factory.build(
+    journeysRepository: JourneysRepository,
+): FetchSelectedJourneyDetailsUseCase = FetchSelectedJourneyDetailsUseCaseImpl(journeysRepository)
+
+private class FetchSelectedJourneyDetailsUseCaseImpl(
     private val journeysRepository: JourneysRepository,
 ) : FetchSelectedJourneyDetailsUseCase {
     override suspend fun invoke() { journeysRepository.fetchSelectedJourneyDetails() }

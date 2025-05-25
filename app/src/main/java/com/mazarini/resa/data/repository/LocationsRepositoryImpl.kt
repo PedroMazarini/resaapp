@@ -9,12 +9,9 @@ import com.mazarini.resa.domain.model.Location
 import com.mazarini.resa.domain.model.LocationType
 import com.mazarini.resa.domain.repositoryAbstraction.LocationsRepository
 import com.mazarini.resa.global.preferences.PrefsProvider
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,10 +25,6 @@ constructor(
     private val recentLocationCacheService: RecentLocationCacheService,
 ) : LocationsRepository {
 
-    init {
-        clearOldLocations()
-    }
-
     @WorkerThread
     override suspend fun queryLocationByText(
         query: String,
@@ -39,7 +32,7 @@ constructor(
         queryLocationsParams = QueryLocationsParams.ByText(
             query = query,
         ),
-        token = prefsProvider.getToken(),
+        token = prefsProvider.getToken().token,
     ).flowOn(Dispatchers.IO)
 
     override suspend fun saveLocation(location: Location) {
@@ -57,11 +50,8 @@ constructor(
         recentLocationCacheService.saveLocation(location)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    fun clearOldLocations() {
-        GlobalScope.launch(Dispatchers.IO) {
-            recentLocationCacheService.clearOldLocations()
-        }
+    override suspend fun clearOldLocations() {
+        recentLocationCacheService.clearOldLocations()
     }
 
     override suspend fun getAllRecentLocation(

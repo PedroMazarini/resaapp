@@ -1,17 +1,20 @@
 package com.mazarini.resa.domain.usecases.location
 
 import com.mazarini.resa.domain.repositoryAbstraction.LocationsRepository
-import javax.inject.Inject
 
 interface DeleteSavedLocationUseCase {
     suspend operator fun invoke(
         id: String,
     )
+
+    companion object Factory
 }
 
-class DeleteSavedLocationUseCaseImpl
-@Inject
-constructor(
+fun DeleteSavedLocationUseCase.Factory.build(
+    locationsRepository: LocationsRepository,
+): DeleteSavedLocationUseCase = DeleteSavedLocationUseCaseImpl(locationsRepository)
+
+private class DeleteSavedLocationUseCaseImpl(
     private val locationsRepository: LocationsRepository,
 ) : DeleteSavedLocationUseCase {
     override suspend fun invoke(

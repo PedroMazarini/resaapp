@@ -37,4 +37,6 @@ interface JourneysRepository {
     fun setSelectedJourney(journey: Journey)
 
     suspend fun getSelectedJourney(): StateFlow<Journey?>
+
+    suspend fun clearOldJourneySearches()
 }

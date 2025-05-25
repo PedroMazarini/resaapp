@@ -4,18 +4,21 @@ import com.mazarini.resa.domain.model.Location
 import com.mazarini.resa.domain.model.LocationType
 import com.mazarini.resa.domain.repositoryAbstraction.LocationsRepository
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
 interface GetRecentLocationsUseCase {
     suspend operator fun invoke(
-        types: List<LocationType> = LocationType.values().toList(),
+        types: List<LocationType> = LocationType.entries,
         limit: Int = 100,
     ): Flow<List<Location>>
+
+    companion object Factory
 }
 
-class GetRecentLocationsUseCaseImpl
-@Inject
-constructor(
+fun GetRecentLocationsUseCase.Factory.build(
+    locationsRepository: LocationsRepository,
+): GetRecentLocationsUseCase = GetRecentLocationsUseCaseImpl(locationsRepository)
+
+private class GetRecentLocationsUseCaseImpl(
     private val locationsRepository: LocationsRepository,
 ) : GetRecentLocationsUseCase {
     override suspend fun invoke(

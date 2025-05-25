@@ -1,15 +1,18 @@
 package com.mazarini.resa.domain.usecases.journey
 
 import com.mazarini.resa.domain.repositoryAbstraction.JourneysRepository
-import javax.inject.Inject
 
 interface LoadSavedJourneyToHomeUseCase {
     suspend operator fun invoke()
+
+    companion object Factory
 }
 
-class LoadSavedJourneyToHomeUseCaseImpl
-@Inject
-constructor(
+fun LoadSavedJourneyToHomeUseCase.Factory.build(
+    journeysRepository: JourneysRepository,
+): LoadSavedJourneyToHomeUseCase = LoadSavedJourneyToHomeUseCaseImpl(journeysRepository)
+
+private class LoadSavedJourneyToHomeUseCaseImpl(
     private val journeysRepository: JourneysRepository,
 ) : LoadSavedJourneyToHomeUseCase {
     override suspend fun invoke() = journeysRepository.loadSavedJourneyToHome()

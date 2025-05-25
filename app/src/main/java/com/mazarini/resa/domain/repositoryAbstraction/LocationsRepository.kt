@@ -21,4 +21,6 @@ interface LocationsRepository {
         limit: Int,
         types: List<LocationType>,
     ): Flow<List<Location>>
+
+    suspend fun clearOldLocations()
 }

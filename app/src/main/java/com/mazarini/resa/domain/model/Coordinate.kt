@@ -14,9 +14,6 @@ data class Coordinate(
     fun toLatLng() = LatLng(lat, lon)
 }
 
-fun List<Coordinate>.priorCoordinates() = subList(0, indexOfFirst { it.isPartOfTrip } + 1)
-fun List<Coordinate>.posteriorCoordinates() = subList(indexOfLast { it.isPartOfTrip }, size)
-
 fun List<Coordinate>.splitTripStops(): Triple<List<LatLng>, List<LatLng>, List<LatLng>> {
     var legStart = 0
     var legEnd = 0
@@ -44,21 +41,4 @@ fun List<Coordinate>.splitTripStops(): Triple<List<LatLng>, List<LatLng>, List<L
 
     return Triple(prior, trip, posterior)
 }
-//fun List<Coordinate>.splitTripStops(): Triple<List<LatLng>, List<LatLng>, List<LatLng>> {
-//    // Assuming Coordinate is a class with an isPartOfTrip Boolean property.
-//    val coordinates = this // Assuming 'this' is a List<Coordinate>
-//
-//    // Find the index where the trip starts.
-//    val tripStartIndex = coordinates.indexOfFirst { it.isPartOfTrip }.takeIf { it != -1 } ?: return Triple(emptyList(), emptyList(), emptyList())
-//
-//    // Find the index where the trip ends.
-//    val tripEndIndex = coordinates.subList(tripStartIndex, coordinates.size).indexOfFirst { !it.isPartOfTrip }.let { if (it == -1) coordinates.size else it + tripStartIndex }
-//
-//    // Splitting based on the found indices.
-//    val prior = coordinates.take(tripStartIndex + 1).map { it.toLatLng() }
-//    val trip = coordinates.subList(tripStartIndex, tripEndIndex).map { it.toLatLng() }
-//    val posterior = coordinates.subList(tripEndIndex, size).map { it.toLatLng() }
-//
-//    return Triple(prior, trip, posterior)
-//}
 fun LatLng.samePosition(other: Coordinate) = latitude == other.lat && longitude == other.lon

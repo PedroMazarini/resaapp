@@ -12,20 +12,15 @@ import com.mazarini.resa.domain.model.journey.LegDetails
 import com.mazarini.resa.domain.model.queryjourneys.QueryJourneysParams
 import com.mazarini.resa.domain.repositoryAbstraction.JourneysRepository
 import com.mazarini.resa.global.JsonEncoder
-import com.mazarini.resa.global.analytics.EventType
 import com.mazarini.resa.global.analytics.loge
-import com.mazarini.resa.global.extensions.tryCatch
 import com.mazarini.resa.global.preferences.PrefsProvider
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -42,10 +37,6 @@ constructor(
     private val selectedJourney: MutableStateFlow<Journey?> = MutableStateFlow(null)
 
     private val trackedVehicle: MutableSharedFlow<List<VehiclePosition>> = MutableSharedFlow()
-
-    init {
-        clearOldJourneySearches()
-    }
 
     @WorkerThread
     override suspend fun queryJourneys(): Flow<PagingData<Journey>> =
@@ -77,7 +68,7 @@ constructor(
         } ?: return Result.failure(Throwable("No current journey query found"))
     }
 
-    private suspend fun getToken() = prefsProvider.getToken()
+    private suspend fun getToken() = prefsProvider.getToken().token
 
     private suspend fun getCurrentJourneysQuery() = JsonEncoder.decode<QueryJourneysParams>(
         prefsProvider.getCurrentJourneysQuery().orEmpty()
@@ -110,11 +101,8 @@ constructor(
         selectedJourney.value = prefsProvider.getSavedJourney()
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    fun clearOldJourneySearches() {
-        GlobalScope.launch(Dispatchers.IO) {
-            recentJourneySearchService.clearOldJourneySearch()
-        }
+    override suspend fun clearOldJourneySearches() {
+        recentJourneySearchService.clearOldJourneySearch()
     }
 
     override suspend fun getAllRecentJourneySearch(): Flow<List<JourneySearch>> =

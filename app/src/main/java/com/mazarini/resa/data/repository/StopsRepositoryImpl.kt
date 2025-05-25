@@ -21,7 +21,7 @@ constructor(
         try {
             stopsDatasource.getStopsByCoordinate(
                 coordinate = coordinate,
-                token = prefsProvider.getToken(),
+                token = prefsProvider.getToken().token,
             )
         } catch (e: Exception) {
             emptyList()
@@ -31,7 +31,7 @@ constructor(
         try {
             stopsDatasource.getStopsByName(
                 query = query,
-                token = prefsProvider.getToken(),
+                token = prefsProvider.getToken().token,
             )
         } catch (e: Exception) {
             emptyList()
@@ -41,7 +41,7 @@ constructor(
         try {
             stopsDatasource.getStopDepartures(
                 stopAreaGid = stopAreaGid,
-                token = prefsProvider.getToken(),
+                token = prefsProvider.getToken().token,
             )
         } catch (e: Exception) {
             emptyList()

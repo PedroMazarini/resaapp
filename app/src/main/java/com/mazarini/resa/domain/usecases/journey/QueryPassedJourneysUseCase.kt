@@ -4,15 +4,18 @@ import androidx.paging.PagingData
 import com.mazarini.resa.domain.model.journey.Journey
 import com.mazarini.resa.domain.repositoryAbstraction.JourneysRepository
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
 interface QueryPassedJourneysUseCase {
     suspend operator fun invoke(): Flow<PagingData<Journey>>
+
+    companion object Factory
 }
 
-class QueryPassedJourneysUseCaseImpl
-@Inject
-constructor(
+fun QueryPassedJourneysUseCase.Factory.build(
+    journeysRepository: JourneysRepository,
+): QueryPassedJourneysUseCase = QueryPassedJourneysUseCaseImpl(journeysRepository)
+
+private class QueryPassedJourneysUseCaseImpl(
     private val journeysRepository: JourneysRepository,
 ) : QueryPassedJourneysUseCase {
     override suspend fun invoke(): Flow<PagingData<Journey>> {

@@ -5,61 +5,39 @@ import com.mazarini.resa.domain.repositoryAbstraction.JourneysRepository
 import com.mazarini.resa.domain.repositoryAbstraction.LocationsRepository
 import com.mazarini.resa.domain.repositoryAbstraction.StopsRepository
 import com.mazarini.resa.domain.usecases.RefreshTokenUseCase
-import com.mazarini.resa.domain.usecases.RefreshTokenUseCaseImpl
+import com.mazarini.resa.domain.usecases.build
 import com.mazarini.resa.domain.usecases.journey.CheckHasVehiclePositionUseCase
-import com.mazarini.resa.domain.usecases.journey.CheckHasVehiclePositionUseCaseImpl
+import com.mazarini.resa.domain.usecases.journey.ClearOldJourneySearchesUseCase
 import com.mazarini.resa.domain.usecases.journey.DeleteRecentJourneySearchUseCase
-import com.mazarini.resa.domain.usecases.journey.DeleteRecentJourneySearchUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.DeleteSavedJourneySearchUseCase
-import com.mazarini.resa.domain.usecases.journey.DeleteSavedJourneySearchUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.FetchSelectedJourneyDetailsUseCase
-import com.mazarini.resa.domain.usecases.journey.FetchSelectedJourneyDetailsUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCase
-import com.mazarini.resa.domain.usecases.journey.GetCurrentJourneyQueryUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.GetRecentJourneySearchesUseCase
-import com.mazarini.resa.domain.usecases.journey.GetRecentJourneySearchesUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.GetSavedJourneySearchesUseCase
-import com.mazarini.resa.domain.usecases.journey.GetSavedJourneySearchesUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.GetSelectedJourneyUseCase
-import com.mazarini.resa.domain.usecases.journey.GetSelectedJourneyUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.ListenVehiclePositionUseCase
-import com.mazarini.resa.domain.usecases.journey.ListenVehiclePositionUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.LoadSavedJourneyToHomeUseCase
-import com.mazarini.resa.domain.usecases.journey.LoadSavedJourneyToHomeUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.QueryJourneysUseCase
-import com.mazarini.resa.domain.usecases.journey.QueryJourneysUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.QueryPassedJourneysUseCase
-import com.mazarini.resa.domain.usecases.journey.QueryPassedJourneysUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCase
-import com.mazarini.resa.domain.usecases.journey.SaveCurrentJourneyQueryUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.SaveCurrentJourneyToHomeUseCase
-import com.mazarini.resa.domain.usecases.journey.SaveCurrentJourneyToHomeUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.SaveJourneySearchUseCase
-import com.mazarini.resa.domain.usecases.journey.SaveJourneySearchUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.SaveRecentJourneySearchUseCase
-import com.mazarini.resa.domain.usecases.journey.SaveRecentJourneySearchUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.SetSelectedJourneyUseCase
-import com.mazarini.resa.domain.usecases.journey.SetSelectedJourneyUseCaseImpl
 import com.mazarini.resa.domain.usecases.journey.StartVehicleTrackingUseCase
-import com.mazarini.resa.domain.usecases.journey.StartVehicleTrackingUseCaseImpl
+import com.mazarini.resa.domain.usecases.journey.build
+import com.mazarini.resa.domain.usecases.location.ClearOldLocationsUseCase
 import com.mazarini.resa.domain.usecases.location.DeleteSavedLocationUseCase
-import com.mazarini.resa.domain.usecases.location.DeleteSavedLocationUseCaseImpl
 import com.mazarini.resa.domain.usecases.location.GetRecentLocationsUseCase
-import com.mazarini.resa.domain.usecases.location.GetRecentLocationsUseCaseImpl
 import com.mazarini.resa.domain.usecases.location.GetSavedLocationsUseCase
-import com.mazarini.resa.domain.usecases.location.GetSavedLocationsUseCaseImpl
 import com.mazarini.resa.domain.usecases.location.QueryLocationByTextUseCase
-import com.mazarini.resa.domain.usecases.location.QueryLocationByTextUseCaseImpl
 import com.mazarini.resa.domain.usecases.location.SaveLocationUseCase
-import com.mazarini.resa.domain.usecases.location.SaveLocationUseCaseImpl
 import com.mazarini.resa.domain.usecases.location.SaveRecentLocationUseCase
-import com.mazarini.resa.domain.usecases.location.SaveRecentLocationUseCaseImpl
+import com.mazarini.resa.domain.usecases.location.build
 import com.mazarini.resa.domain.usecases.stoparea.GetStopDeparturesUseCase
-import com.mazarini.resa.domain.usecases.stoparea.GetStopDeparturesUseCaseImpl
 import com.mazarini.resa.domain.usecases.stoparea.GetStopsByCoordinateUseCase
-import com.mazarini.resa.domain.usecases.stoparea.GetStopsByCoordinateUseCaseImpl
 import com.mazarini.resa.domain.usecases.stoparea.GetStopsByNameUseCase
-import com.mazarini.resa.domain.usecases.stoparea.GetStopsByNameUseCaseImpl
+import com.mazarini.resa.domain.usecases.stoparea.build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -75,7 +53,7 @@ object UseCasesModule {
     fun providesRefreshTokenUsecase(
         authenticationRepository: AuthenticationRepository,
     ): RefreshTokenUseCase {
-        return RefreshTokenUseCaseImpl(
+        return RefreshTokenUseCase.build(
             authenticationRepository = authenticationRepository,
         )
     }
@@ -85,7 +63,7 @@ object UseCasesModule {
     fun providesQueryJourneysUseCase(
         journeysRepository: JourneysRepository,
     ): QueryJourneysUseCase {
-        return QueryJourneysUseCaseImpl(
+        return QueryJourneysUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -95,7 +73,7 @@ object UseCasesModule {
     fun providesQueryPassedJourneysUseCase(
         journeysRepository: JourneysRepository,
     ): QueryPassedJourneysUseCase {
-        return QueryPassedJourneysUseCaseImpl(
+        return QueryPassedJourneysUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -105,7 +83,7 @@ object UseCasesModule {
     fun providesQueryLocationsUseCase(
         locationsRepository: LocationsRepository,
     ): QueryLocationByTextUseCase {
-        return QueryLocationByTextUseCaseImpl(
+        return QueryLocationByTextUseCase.build(
             locationsRepository = locationsRepository,
         )
     }
@@ -115,7 +93,7 @@ object UseCasesModule {
     fun providesSaveCurrentJourneyQueryUseCase(
         journeysRepository: JourneysRepository,
     ): SaveCurrentJourneyQueryUseCase {
-        return SaveCurrentJourneyQueryUseCaseImpl(
+        return SaveCurrentJourneyQueryUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -125,7 +103,7 @@ object UseCasesModule {
     fun providesCheckHasVehiclePositionUseCase(
         journeysRepository: JourneysRepository,
     ): CheckHasVehiclePositionUseCase {
-        return CheckHasVehiclePositionUseCaseImpl(
+        return CheckHasVehiclePositionUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -135,7 +113,7 @@ object UseCasesModule {
     fun providesGetCurrentJourneyQueryUseCase(
         journeysRepository: JourneysRepository,
     ): GetCurrentJourneyQueryUseCase {
-        return GetCurrentJourneyQueryUseCaseImpl(
+        return GetCurrentJourneyQueryUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -145,7 +123,7 @@ object UseCasesModule {
     fun providesSaveCurrentJourneyToHomeUseCase(
         journeysRepository: JourneysRepository,
     ): SaveCurrentJourneyToHomeUseCase {
-        return SaveCurrentJourneyToHomeUseCaseImpl(
+        return SaveCurrentJourneyToHomeUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -155,7 +133,7 @@ object UseCasesModule {
     fun providesLoadSavedJourneyToHomeUseCase(
         journeysRepository: JourneysRepository,
     ): LoadSavedJourneyToHomeUseCase {
-        return LoadSavedJourneyToHomeUseCaseImpl(
+        return LoadSavedJourneyToHomeUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -165,7 +143,7 @@ object UseCasesModule {
     fun providesSaveLocationUseCase(
         locationsRepository: LocationsRepository,
     ): SaveLocationUseCase {
-        return SaveLocationUseCaseImpl(
+        return SaveLocationUseCase.build(
             locationsRepository = locationsRepository,
         )
     }
@@ -175,7 +153,7 @@ object UseCasesModule {
     fun providesDeleteLocationUseCase(
         locationsRepository: LocationsRepository,
     ): DeleteSavedLocationUseCase {
-        return DeleteSavedLocationUseCaseImpl(
+        return DeleteSavedLocationUseCase.build(
             locationsRepository = locationsRepository,
         )
     }
@@ -185,7 +163,7 @@ object UseCasesModule {
     fun providesGetSavedLocationsUseCase(
         locationsRepository: LocationsRepository,
     ): GetSavedLocationsUseCase {
-        return GetSavedLocationsUseCaseImpl(
+        return GetSavedLocationsUseCase.build(
             locationsRepository = locationsRepository,
         )
     }
@@ -195,7 +173,7 @@ object UseCasesModule {
     fun providesSaveRecentLocationUseCase(
         locationsRepository: LocationsRepository,
     ): SaveRecentLocationUseCase {
-        return SaveRecentLocationUseCaseImpl(
+        return SaveRecentLocationUseCase.build(
             locationsRepository = locationsRepository,
         )
     }
@@ -205,7 +183,7 @@ object UseCasesModule {
     fun providesGetRecentLocationsUseCase(
         locationsRepository: LocationsRepository,
     ): GetRecentLocationsUseCase {
-        return GetRecentLocationsUseCaseImpl(
+        return GetRecentLocationsUseCase.build(
             locationsRepository = locationsRepository,
         )
     }
@@ -215,7 +193,7 @@ object UseCasesModule {
     fun providesGetRecentJourneySearchesUseCase(
         journeysRepository: JourneysRepository,
     ): GetRecentJourneySearchesUseCase {
-        return GetRecentJourneySearchesUseCaseImpl(
+        return GetRecentJourneySearchesUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -225,7 +203,7 @@ object UseCasesModule {
     fun providesSaveRecentJourneySearchUseCase(
         journeysRepository: JourneysRepository,
     ): SaveRecentJourneySearchUseCase {
-        return SaveRecentJourneySearchUseCaseImpl(
+        return SaveRecentJourneySearchUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -235,7 +213,7 @@ object UseCasesModule {
     fun providesGetSavedJourneySearchesUseCase(
         journeysRepository: JourneysRepository,
     ): GetSavedJourneySearchesUseCase {
-        return GetSavedJourneySearchesUseCaseImpl(
+        return GetSavedJourneySearchesUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -245,7 +223,7 @@ object UseCasesModule {
     fun providesDeleteSavedJourneySearchUseCase(
         journeysRepository: JourneysRepository,
     ): DeleteSavedJourneySearchUseCase {
-        return DeleteSavedJourneySearchUseCaseImpl(
+        return DeleteSavedJourneySearchUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -255,7 +233,7 @@ object UseCasesModule {
     fun providesSaveJourneySearchUseCase(
         journeysRepository: JourneysRepository,
     ): SaveJourneySearchUseCase {
-        return SaveJourneySearchUseCaseImpl(
+        return SaveJourneySearchUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -265,7 +243,7 @@ object UseCasesModule {
     fun providesGetDeparturesAroundUseCase(
         stopsRepository: StopsRepository,
     ): GetStopsByCoordinateUseCase {
-        return GetStopsByCoordinateUseCaseImpl(
+        return GetStopsByCoordinateUseCase.build(
             stopsRepository = stopsRepository,
         )
     }
@@ -275,7 +253,7 @@ object UseCasesModule {
     fun providesGetStopsByNameUseCase(
         stopsRepository: StopsRepository,
     ): GetStopsByNameUseCase {
-        return GetStopsByNameUseCaseImpl(
+        return GetStopsByNameUseCase.build(
             stopsRepository = stopsRepository,
         )
     }
@@ -285,7 +263,7 @@ object UseCasesModule {
     fun providesGetStopDeparturesUseCase(
         stopsRepository: StopsRepository,
     ): GetStopDeparturesUseCase {
-        return GetStopDeparturesUseCaseImpl(
+        return GetStopDeparturesUseCase.build(
             stopsRepository = stopsRepository,
         )
     }
@@ -295,7 +273,7 @@ object UseCasesModule {
     fun providesFetchSelectedJourneyDetailsUseCase(
         journeysRepository: JourneysRepository,
     ): FetchSelectedJourneyDetailsUseCase {
-        return FetchSelectedJourneyDetailsUseCaseImpl(
+        return FetchSelectedJourneyDetailsUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -305,7 +283,7 @@ object UseCasesModule {
     fun providesGetSelectedJourneyUseCase(
         journeysRepository: JourneysRepository,
     ): GetSelectedJourneyUseCase {
-        return GetSelectedJourneyUseCaseImpl(
+        return GetSelectedJourneyUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -315,7 +293,7 @@ object UseCasesModule {
     fun providesDeleteRecentJourneySearchUseCase(
         journeysRepository: JourneysRepository,
     ): DeleteRecentJourneySearchUseCase {
-        return DeleteRecentJourneySearchUseCaseImpl(
+        return DeleteRecentJourneySearchUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -325,7 +303,7 @@ object UseCasesModule {
     fun providesSetSelectedJourneyUseCase(
         journeysRepository: JourneysRepository,
     ): SetSelectedJourneyUseCase {
-        return SetSelectedJourneyUseCaseImpl(
+        return SetSelectedJourneyUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -335,7 +313,7 @@ object UseCasesModule {
     fun providesListenVehiclePositionUseCase(
         journeysRepository: JourneysRepository,
     ): ListenVehiclePositionUseCase {
-        return ListenVehiclePositionUseCaseImpl(
+        return ListenVehiclePositionUseCase.build(
             journeysRepository = journeysRepository,
         )
     }
@@ -345,7 +323,27 @@ object UseCasesModule {
     fun providesStartVehicleTrackingUseCase(
         journeysRepository: JourneysRepository,
     ): StartVehicleTrackingUseCase {
-        return StartVehicleTrackingUseCaseImpl(
+        return StartVehicleTrackingUseCase.build(
+            journeysRepository = journeysRepository,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesClearOldLocationsUseCase(
+        locationsRepository: LocationsRepository,
+    ): ClearOldLocationsUseCase {
+        return ClearOldLocationsUseCase.build(
+            locationsRepository = locationsRepository,
+        )
+    }
+
+    @Singleton
+    @Provides
+    fun providesClearOldJourneySearchesUseCase(
+        journeysRepository: JourneysRepository,
+    ): ClearOldJourneySearchesUseCase {
+        return ClearOldJourneySearchesUseCase.build(
             journeysRepository = journeysRepository,
         )
     }

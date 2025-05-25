@@ -1,15 +1,18 @@
 package com.mazarini.resa.domain.usecases.journey
 
 import com.mazarini.resa.domain.repositoryAbstraction.JourneysRepository
-import javax.inject.Inject
 
 interface StartVehicleTrackingUseCase {
     suspend operator fun invoke()
+
+    companion object Factory
 }
 
-class StartVehicleTrackingUseCaseImpl
-@Inject
-constructor(
+fun StartVehicleTrackingUseCase.Factory.build(
+    journeysRepository: JourneysRepository,
+): StartVehicleTrackingUseCase = StartVehicleTrackingUseCaseImpl(journeysRepository)
+
+private class StartVehicleTrackingUseCaseImpl(
     private val journeysRepository: JourneysRepository,
 ) : StartVehicleTrackingUseCase {
     override suspend fun invoke() = journeysRepository.startVehicleTracking()
