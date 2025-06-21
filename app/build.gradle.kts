@@ -7,9 +7,11 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.google.services)
     id("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    if (File("google-services.json").exists()) {
+        alias(libs.plugins.google.services)
+    }
 }
 
 val localProperties = Properties().apply {

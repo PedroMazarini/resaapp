@@ -25,9 +25,13 @@ fun loge(tag: String, params: Map<String, String> = mapOf()) {
         Log.e(tag.take(22), params.toString())
     }
     val name = tag.ifEmpty { "Event" }
-    Firebase.analytics.logEvent(name) {
-        params.forEach { (key, value) ->
-            param(key, value)
+    try {
+        Firebase.analytics.logEvent(name) {
+            params.forEach { (key, value) ->
+                param(key, value)
+            }
         }
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to log event: $name with params: $params", e)
     }
 }
