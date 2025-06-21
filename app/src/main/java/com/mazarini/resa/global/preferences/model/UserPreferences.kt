@@ -32,16 +32,28 @@ object UserPreferencesSerializer : Serializer<UserPreferences> {
     override val defaultValue = UserPreferences()
 
     override suspend fun readFrom(input: InputStream): UserPreferences {
-        try {
+        return try {
             val encryptedBytes = withContext(Dispatchers.IO) {
                 input.use { it.readBytes() }
             }
-            val encryptedBytesDecoded = Base64.getDecoder().decode(encryptedBytes)
-            val decryptedBytes = Crypto.decrypt(encryptedBytesDecoded)
+
+            if (encryptedBytes.isEmpty()) return defaultValue
+
+            val base64Decoded = try {
+                Base64.getDecoder().decode(encryptedBytes)
+            } catch (e: IllegalArgumentException) {
+                // Probably not Base64-encoded; assume it's a plain JSON file
+                return Json.decodeFromString(encryptedBytes.decodeToString())
+            }
+
+            val decryptedBytes = Crypto.decrypt(base64Decoded)
             val decodedJsonString = decryptedBytes.decodeToString()
-            return Json.decodeFromString(decodedJsonString)
-        } catch (serialization: SerializationException) {
-            throw CorruptionException("Unable to read UserPrefs", serialization)
+            Json.decodeFromString(decodedJsonString)
+
+        } catch (e: SerializationException) {
+            throw CorruptionException("Unable to read UserPrefs", e)
+        } catch (e: Exception) {
+            throw CorruptionException("Unexpected error reading UserPrefs", e)
         }
     }
 
