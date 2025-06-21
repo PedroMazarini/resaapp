@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PedroMazarini/resapublic/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" alt="Resa Logo" width="60" style="vertical-align: middle;"/>
+  <img src="https://raw.githubusercontent.com/PedroMazarini/resaapp/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" alt="Resa Logo" width="60" style="vertical-align: middle;"/>
   <span style="font-size: 2.5em; vertical-align: middle; margin-left: 10px;">Resa</span>
 </p>
 
@@ -126,7 +126,7 @@ Feel free to check the [issues page](https://github.com/PedroMazarini/resapublic
 
 ## 📝 License
 
-This project is [MIT](LICENSE) licensed.
+This project is [MIT](https://mit-license.org/) licensed.
 
 ---
 
