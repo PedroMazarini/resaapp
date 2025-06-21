@@ -7,7 +7,9 @@
 <p align="center">
   <b>Your personal travel companion for public transport in Västra Götaland, Sweden.</b><br>
   <a href="https://play.google.com/store/apps/details?id=com.mazarini.resa">
-    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="60"/>
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+         alt="Get it on Google Play" 
+         style="height: 80px;"/>
   </a>
 </p>
 
