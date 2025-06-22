@@ -30,7 +30,7 @@ Inspired by the need for a better, privacy-friendly, and more customizable publi
 
 Resa is built using a clean, modular architecture inspired by best practices in modern Android development:
 
-- **MVVM (Model-View-ViewModel)** for clear separation of concerns.
+- **MVI (Model-View-Intent)** for clear separation of concerns.
 - **Kotlin Coroutines & Flow** for asynchronous and reactive programming.
 - **Jetpack Compose** for declarative, modern UI.
 - **Hilt** for dependency injection.
